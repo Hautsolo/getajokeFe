@@ -8,13 +8,16 @@ import {
   Button,
 } from 'react-bootstrap';
 import { signOut } from '../utils/auth';
+import { useAuth } from '../utils/context/authContext';
 
 export default function NavBar() {
+  const { user } = useAuth();
+
   return (
     <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
       <Container>
         <Link passHref href="/">
-          <Navbar.Brand>CHANGE ME</Navbar.Brand>
+          <Navbar.Brand>GetAJoke</Navbar.Brand>
         </Link>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
@@ -29,6 +32,7 @@ export default function NavBar() {
             <Button variant="danger" onClick={signOut}>
               Sign Out
             </Button>
+            <h1 id='"username1"'>Hello {user.fbUser.displayName}! </h1>
           </Nav>
         </Navbar.Collapse>
       </Container>

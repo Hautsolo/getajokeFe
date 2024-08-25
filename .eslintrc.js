@@ -23,6 +23,8 @@ module.exports = {
         extensions: ['.js', '.jsx'],
       },
     ],
+    'no-underscore-dangle': ['error', { allow: ['__isNew__'] }],
+
     'react/jsx-one-expression-per-line': [0],
     'no-console': [
       1,
