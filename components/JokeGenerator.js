@@ -122,7 +122,6 @@ export default JokeGenerator;
 // // import { getTags } from '../api/tagData';
 
 // const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
-// const API_KEY = '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'; // Replace with your actual API key
 
 // const AIJokeGenerator = () => {
 //   const [topic, setTopic] = useState('');
