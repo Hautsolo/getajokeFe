@@ -41,3 +41,80 @@ body {
   color: white;
   transform: scale(1.05);
 }
+
+.postcontainer {
+  display: flex;
+  flex-direction: column;
+  position: relative; /* This allows the absolute positioning of buttons */
+}
+
+.buttonscontainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Align buttons to the right */
+  position: absolute; /* Position absolutely within the post container */
+  bottom: 10px; /* Space from the bottom */
+  right: 0; /* Align to the right edge */
+}
+
+.postcontents {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.post-card-button {
+  margin-bottom: 10px; /* Adjust spacing between buttons if needed */
+}
+
+/* Optional: If needed, add extra styling for delete button */
+.delete-button {
+  /* Add additional styles for delete button */
+}
+.post-card-button{
+  background-color: white;
+  font-size: 20px;
+  border-radius: 10px;
+  padding: 10px;
+  display: block;
+  text-align: center;
+  margin: 10px;
+  color: slateblue;
+  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.5s ease;
+}
+.post-card-button:hover{
+  background-color: slateblue;
+  color: white;
+  transform: scale(1.05);
+}
+.commentscontainer{
+  background-color: white;
+  font-size: 20px;
+  border-radius: 10px;
+  padding: 10px;
+  display: block;
+  text-align: center;
+  margin: 10px;
+  color: slateblue;
+  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.5s ease;
+
+}
+
+.commentslist{
+  margin-top: 20px;
+}
+
+#content{
+  font-weight: bolder;
+  font-size: 30px;
+}
+#jokcontent{
+  font-weight: bolder;
+  font-size: 30px;
+
+}

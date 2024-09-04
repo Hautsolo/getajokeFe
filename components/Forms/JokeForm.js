@@ -29,7 +29,6 @@ export default function JokeForm({ obj }) {
       });
       setSelectedTags(prevTags);
       setFormInput({
-        title: obj.title || '',
         content: obj.content || '',
         tags: obj.tags || [],
       });
@@ -76,7 +75,7 @@ export default function JokeForm({ obj }) {
     };
 
     if (obj?.id) {
-      updateJoke(payload).then(() => router.push('/'));
+      updateJoke(payload, obj.id).then(() => router.push('/'));
     } else {
       createJoke(payload).then(() => router.push('/'));
     }
@@ -85,18 +84,6 @@ export default function JokeForm({ obj }) {
   return (
     <Form onSubmit={handleSubmit}>
       <h2 className="text-white mt-5">{obj.id ? 'Update' : 'Create'} Post</h2>
-
-      {/* TITLE INPUT */}
-      <FloatingLabel controlId="floatingInput1" label="Post Title" className="mb-3">
-        <Form.Control
-          type="text"
-          placeholder="Enter a title"
-          name="title"
-          value={formInput.title}
-          onChange={handleChange}
-          required
-        />
-      </FloatingLabel>
 
       {/* DESCRIPTION TEXTAREA */}
       <FloatingLabel controlId="floatingTextarea" label="Content" className="mb-3">
@@ -154,5 +141,12 @@ JokeForm.propTypes = {
 };
 
 JokeForm.defaultProps = {
-  obj: initialState,
+  obj: {
+    id: null,
+    title: '',
+    content: '',
+    user: {},
+    upvotes: 0,
+    tags: [],
+  },
 };

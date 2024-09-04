@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-// import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
-// import Link from 'next/link';
-// import { ListGroup } from 'react-bootstrap';
-import { ButtonGroup, Dropdown, DropdownButton } from 'react-bootstrap';
+import Button from 'react-bootstrap/Button';
 import { deleteComment, updateComment } from '../api/commentData';
 import CommentForm from './Forms/CommentForm';
 import { useAuth } from '../utils/context/authContext';
@@ -47,33 +44,42 @@ function CommentCard({ commentObj, onUpdate }) {
   };
 
   return (
-    <Card style={
-      {
-        width: '400px', margin: '15px', background: 'none', display: 'flex', border: '1px solid #F6F6F6', radius: '5px', padding: '5px', color: '#F6F6F6',
-      }
-    }
+    <Card style={{
+      width: '400px',
+      margin: '15px',
+      background: 'none',
+      display: 'flex',
+      border: '1px solid #F6F6F6',
+      borderRadius: '5px',
+      padding: '5px',
+      color: 'black',
+      position: 'relative',
+    }}
     >
-      <Card.Body style={{ display: 'flex', wrap: 'wrap', justify: 'space-between' }}>
+      <Card.Body style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '10px',
+      }}
+      >
         {cardText}
-        {commentObj.user === commentUser.id && edit === false ? [DropdownButton].map((DropdownType, idx) => (
-          <DropdownType
-            as={ButtonGroup}
-            style={
-              {
-                display: 'flex', marginLeft: 'auto', height: '25px', alignItems: 'center',
-              }
-            }
-            // key={idx}
-            id={`dropdown-button-drop-${idx}`}
-            size="sm"
-            variant="secondary"
-            title="Options"
+        {commentObj.user === commentUser.id && !edit && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            marginLeft: 'auto',
+          }}
           >
-            <Dropdown.Item onClick={editThisComment}>Edit</Dropdown.Item>
-            <Dropdown.Divider />
-            <Dropdown.Item onClick={deleteThisComment}>Delete</Dropdown.Item>
-          </DropdownType>
-        )) : ''}
+            <Button variant="secondary" size="sm" onClick={editThisComment} style={{ marginBottom: '5px' }}>
+              Edit
+            </Button>
+            <Button variant="danger" size="sm" onClick={deleteThisComment}>
+              Delete
+            </Button>
+          </div>
+        )}
       </Card.Body>
     </Card>
   );
@@ -84,7 +90,7 @@ CommentCard.propTypes = {
     id: PropTypes.number,
     content: PropTypes.string,
     uid: PropTypes.string,
-    user: PropTypes.number,
+    user: PropTypes.string,
     post: PropTypes.number,
   }).isRequired,
   onUpdate: PropTypes.func.isRequired,

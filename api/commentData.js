@@ -1,10 +1,10 @@
 import { clientCredentials } from '../utils/client';
 
-const endpoint = clientCredentials.databaseURL;
+const endpoint = clientCredentials.databaseURL.replace(/"/g, '');
 
 // GET ALL COMMENTS
 const getComments = () => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/comments`, {
+  fetch(`${endpoint}comments`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ const getComments = () => new Promise((resolve, reject) => {
 
 // GET COMMENTS BY POST ID
 const getCommentsByPostId = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/comments?post_id=${id}`, {
+  fetch(`${endpoint}comments?joke_id=${id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ const getCommentsByPostId = (id) => new Promise((resolve, reject) => {
 
 // GET ALL COMMENTS MADE BY A SINGLE USER
 const getCommentsForSingleUser = (uid) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/comments?uid=${uid}"`, {
+  fetch(`${endpoint}comments?uid=${uid}"`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ const getCommentsForSingleUser = (uid) => new Promise((resolve, reject) => {
 
 // GET A SINGLE COMMENT
 const getSingleComment = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/comments/${id}`, {
+  fetch(`${endpoint}comments/${id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -55,25 +55,29 @@ const getSingleComment = (id) => new Promise((resolve, reject) => {
 });
 
 // CREATE COMMENT
-const createComment = (userId, postId, comment) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/posts/${postId}/post_comments`, {
+const createComment = (userId, id, comment) => new Promise((resolve, reject) => {
+  fetch(`${endpoint}comments?joke_id=${id}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      user: userId,
+      user_id: userId,
       content: comment.content,
     }),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
     .then((data) => resolve(data))
     .catch(reject);
 });
-
 // UPDATE COMMENT
 const updateComment = (payload) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/comments/${payload.id}`, {
+  fetch(`${endpoint}comments/${payload.id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -87,7 +91,7 @@ const updateComment = (payload) => new Promise((resolve, reject) => {
 
 // DELETE COMMENT
 const deleteComment = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/comments/${id}`, {
+  fetch(`${endpoint}comments/${id}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',

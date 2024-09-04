@@ -1,10 +1,10 @@
 import { clientCredentials } from '../utils/client';
 
-const endpoint = clientCredentials.databaseURL;
+const endpoint = clientCredentials.databaseURL.replace(/"/g, '');
 
 // GET ALL TAGS
 const getTags = () => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/tags`, {
+  fetch(`${endpoint}tags`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ const getTags = () => new Promise((resolve, reject) => {
 
 // GET TAGS BY POST ID
 const getTagsByPostId = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/tags?post_id=${id}`, {
+  fetch(`${endpoint}tags?joke_id=${id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ const getTagsByPostId = (id) => new Promise((resolve, reject) => {
 
 // GET ALL TAGS MADE BY A SINGLE USER
 const getTagsForSingleUser = (uid) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/tags?uid=${uid}"`, {
+  fetch(`${endpoint}tags?uid=${uid}"`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ const getTagsForSingleUser = (uid) => new Promise((resolve, reject) => {
 
 // GET A SINGLE TAG
 const getSingleTag = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/tags/${id}`, {
+  fetch(`${endpoint}tags/${id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ const getSingleTag = (id) => new Promise((resolve, reject) => {
 
 // CREATE TAG
 const createTag = (payload) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/tags`, {
+  fetch(`${endpoint}tags`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ const createTag = (payload) => new Promise((resolve, reject) => {
 
 // UPDATE TAG
 const updateTag = (payload) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/tags/${payload.id}`, {
+  fetch(`${endpoint}tags/${payload.id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ const updateTag = (payload) => new Promise((resolve, reject) => {
 
 // DELETE TAG
 const deleteTag = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/tags/${id}`, {
+  fetch(`${endpoint}tags/${id}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
