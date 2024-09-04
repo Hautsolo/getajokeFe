@@ -5,15 +5,15 @@ import { useAuth } from '../../utils/context/authContext';
 import { createComment, updateComment } from '../../api/commentData';
 
 const initialState = {
-  id: '',
+  id: 0,
   content: '',
-  post: '',
-  user: '',
+  joke: 0,
+  user: 0,
   created_on: '',
 };
 
 export default function CommentForm({
-  obj, commentPostId, onSubmit, onCancel,
+  obj, commentPostId, onSubmit,
 }) {
   const [formInput, setFormInput] = useState(initialState);
   const { user } = useAuth();
@@ -23,7 +23,7 @@ export default function CommentForm({
     if (obj.id) {
       setFormInput(obj);
     } else {
-      initialState.post = commentPostId;
+      initialState.joke = commentPostId;
       setFormInput(initialState);
     }
   }, [obj, commentPostId]);
@@ -44,14 +44,14 @@ export default function CommentForm({
         user: obj.user,
         content: formInput.content,
         created_on: obj.created_on,
-        post: obj.post,
+        joke: obj.joke,
       };
       updateComment(updatedComment).then(onSubmit);
     } else {
       const payload = {
         user: user.id,
         content: formInput.content,
-        post: commentPostId,
+        joke: commentPostId,
       };
       createComment(user.id, commentPostId, payload).then(() => {
         setFormInput(initialState);
@@ -84,7 +84,6 @@ export default function CommentForm({
 
         {/* SUBMIT BUTTON  */}
         <Button style={{ marginTop: '10px' }} type="submit">{obj.id ? 'Update' : 'Add'} Comment</Button>
-        {obj.id ? <Button style={{ marginTop: '10px' }} onClick={onCancel}>Cancel</Button> : ''}
       </FloatingLabel>
 
     </Form>
@@ -94,19 +93,13 @@ export default function CommentForm({
 CommentForm.propTypes = {
   obj: PropTypes.shape({
     id: PropTypes.number,
-    user: PropTypes.shape({
-      id: PropTypes.number,
-      name: PropTypes.string,
-      uid: PropTypes.string,
-      bio: PropTypes.string,
-    }),
+    user: PropTypes.number,
     content: PropTypes.string,
-    post: PropTypes.string,
+    joke: PropTypes.number,
     created_on: PropTypes.string,
   }),
   commentPostId: PropTypes.number.isRequired,
   onSubmit: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
 };
 
 CommentForm.defaultProps = {

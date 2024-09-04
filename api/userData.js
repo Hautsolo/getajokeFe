@@ -1,9 +1,9 @@
 import { clientCredentials } from '../utils/client';
 
-const endpoint = clientCredentials.databaseURL;
+const endpoint = clientCredentials.databaseURL.replace(/"/g, '');
 
 const getSingleUser = (uid) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/users/${uid}`, {
+  fetch(`${endpoint}users/${uid}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ const getSingleUser = (uid) => new Promise((resolve, reject) => {
 
 // CREATE USER
 const createUser = (payload) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/users`, {
+  fetch(`${endpoint}users`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ const createUser = (payload) => new Promise((resolve, reject) => {
 
 // UPDATE USER
 const updateUserProfile = (payload) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}/users/${payload.id}`, {
+  fetch(`${endpoint}users/${payload.id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

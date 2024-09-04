@@ -8,34 +8,60 @@ import {
   Button,
 } from 'react-bootstrap';
 import { signOut } from '../utils/auth';
-import { useAuth } from '../utils/context/authContext';
 
 export default function NavBar() {
-  const { user } = useAuth();
-
   return (
-    <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-      <Container>
-        <Link passHref href="/">
-          <Navbar.Brand>GetAJoke</Navbar.Brand>
-        </Link>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Navbar.Collapse id="responsive-navbar-nav">
-          <Nav className="me-auto">
-            {/* CLOSE NAVBAR ON LINK SELECTION: https://stackoverflow.com/questions/72813635/collapse-on-select-react-bootstrap-navbar-with-nextjs-not-working */}
-            <Link passHref href="/">
-              <Nav.Link>Home</Nav.Link>
-            </Link>
-            <Link passHref href="/delete-me">
-              <Nav.Link>Delete Me</Nav.Link>
-            </Link>
-            <Button variant="danger" onClick={signOut}>
-              Sign Out
-            </Button>
-            <h1 id='"username1"'>Hello {user.fbUser.displayName}! </h1>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+    <>
+      <Navbar className="navbar-navbar" collapseOnSelect expand="lg" bg="dark" variant="dark">
+        <Container>
+          <Link passHref href="/">
+            <Navbar.Brand>
+              <img
+                style={{ width: '60px', height: '60px' }}
+                src="https://i.imgur.com/6uLZ8vB.png"
+                alt="LaughLounge"
+                height="40px"
+              />
+            </Navbar.Brand>
+          </Link>
+
+          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+          <Navbar.Collapse id="responsive-navbar-nav">
+            <Nav style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+            }}
+            >
+              {/* CLOSE NAVBAR ON LINK SELECTION: https://stackoverflow.com/questions/72813635/collapse-on-select-react-bootstrap-navbar-with-nextjs-not-working */}
+              <div style={{
+                display: 'flex',
+              }}
+              >
+                <Link passHref href="/">
+                  <Nav.Link className="clickableLink">Home</Nav.Link>
+                </Link>
+                <Link passHref href="/joke/edit/new">
+                  <Nav.Link className="clickableLink">Add Jokes</Nav.Link>
+                </Link>
+                <Link passHref href="/joke/joke-generator">
+                  <Nav.Link className="clickableLink">Generate jokes</Nav.Link>
+                </Link>
+                <Link passHref href="/profile/profile">
+                  <Nav.Link className="clickableLink">Profile</Nav.Link>
+                </Link>
+              </div>
+              <div style={{
+                display: 'flex',
+                marginLeft: 'auto',
+              }}
+              >
+                <Button variant="danger" onClick={signOut}>Sign Out</Button>
+              </div>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+    </>
   );
 }
