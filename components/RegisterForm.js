@@ -3,15 +3,14 @@ import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useRouter } from 'next/router';
-import { registerUser } from '../utils/auth';
-import { updateUserProfile } from '../api/userData';
+import { createUser, updateUserProfile } from '../api/userData'; // Ensure these functions are correctly implemented
 
 function RegisterForm({ obj, user, updateUser }) {
   const [formData, setFormData] = useState({});
   const router = useRouter();
 
   useEffect(() => {
-    if (user && !obj.uid) {
+    if (user && !obj.id) {
       setFormData({
         bio: '',
         uid: user.uid,
@@ -19,16 +18,33 @@ function RegisterForm({ obj, user, updateUser }) {
         username: '',
       });
     } else {
-      setFormData({ ...obj, id: obj.id });
+      setFormData({ ...obj });
     }
   }, [obj, user]);
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!obj.id) {
-      registerUser(formData).then(() => updateUser(user.uid));
-    } else {
-      updateUserProfile(formData).then(() => router.push(`/profile/${obj.uid}`));
+
+    try {
+      if (!obj.id) {
+        await createUser(formData);
+        updateUser(user.uid);
+        router.push('/');
+      } else {
+        await updateUserProfile(formData);
+        router.push(`/profile/${obj.uid}`);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      // Handle error, possibly show a user-friendly message
     }
   };
 
@@ -37,36 +53,25 @@ function RegisterForm({ obj, user, updateUser }) {
   return (
     <Form onSubmit={handleSubmit}>
       <Form.Group className="mb-3" controlId="name">
-        <Form.Label>name</Form.Label>
+        <Form.Label>Name</Form.Label>
         <Form.Control
-          as="textarea"
           name="name"
           required
           placeholder="Enter your Name"
-          onChange={({ target }) => setFormData((prev) => ({ ...prev, [target.name]: target.value }))}
-          value={formData.name}
+          onChange={handleChange}
+          value={formData.name || ''}
+          style={{ color: 'black' }} // Ensures text is visible
         />
       </Form.Group>
-      <Form.Group className="mb-3" controlId="name">
-        <Form.Label>username</Form.Label>
+      <Form.Group className="mb-3" controlId="username">
+        <Form.Label>Username</Form.Label>
         <Form.Control
-          as="textarea"
           name="username"
           required
-          placeholder="Enter your username"
-          onChange={({ target }) => setFormData((prev) => ({ ...prev, [target.name]: target.value }))}
-          value={formData.username}
-        />
-      </Form.Group>
-      <Form.Group className="mb-3" controlId="formBio">
-        <Form.Label>bio</Form.Label>
-        <Form.Control
-          as="textarea"
-          name="bio"
-          required
-          placeholder="Enter your Bio"
-          onChange={({ target }) => setFormData((prev) => ({ ...prev, [target.name]: target.value }))}
-          value={formData.bio}
+          placeholder="Enter your Username"
+          onChange={handleChange}
+          value={formData.username || ''}
+          style={{ color: 'black' }} // Ensures text is visible
         />
       </Form.Group>
       <Button variant="primary" type="submit">
@@ -78,13 +83,12 @@ function RegisterForm({ obj, user, updateUser }) {
 
 RegisterForm.propTypes = {
   user: PropTypes.shape({
-    uid: PropTypes.string,
+    uid: PropTypes.string.isRequired,
   }),
   updateUser: PropTypes.func.isRequired,
   obj: PropTypes.shape({
     id: PropTypes.number,
     name: PropTypes.string,
-    bio: PropTypes.string,
     uid: PropTypes.string,
     username: PropTypes.string,
   }),
@@ -93,11 +97,10 @@ RegisterForm.propTypes = {
 RegisterForm.defaultProps = {
   obj: {
     name: '',
-    bio: '',
     uid: '',
     username: '',
   },
-  user: null, // Set to null if user is not available
+  user: null,
 };
 
 export default RegisterForm;

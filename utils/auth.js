@@ -2,10 +2,10 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 // import { clientCredentials } from './client';
 
-const endpoint = 'http://localhost:8000/users';
+const endpoint = 'http://getajoke-2131adcf207d.herokuapp.com/users';
 
 const checkUser = (uid) => new Promise((resolve, reject) => {
-  fetch('http://localhost:8000/checkuser', {
+  fetch('http://getajoke-2131adcf207d.herokuapp.com/checkuser', {
     method: 'POST',
     body: JSON.stringify({
       uid,

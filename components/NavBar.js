@@ -39,16 +39,16 @@ export default function NavBar() {
               }}
               >
                 <Link passHref href="/">
-                  <Nav.Link className="clickableLink">Home</Nav.Link>
+                  <Nav.Link className="clickableLink" style={{ marginRight: '15px' }}>Home </Nav.Link>
                 </Link>
                 <Link passHref href="/joke/edit/new">
-                  <Nav.Link className="clickableLink">Add Jokes</Nav.Link>
+                  <Nav.Link className="clickableLink" style={{ marginRight: '15px' }}>Add Jokes</Nav.Link>
                 </Link>
                 <Link passHref href="/joke/joke-generator">
-                  <Nav.Link className="clickableLink">Generate jokes</Nav.Link>
+                  <Nav.Link className="clickableLink" style={{ marginRight: '15px' }}>Generate jokes</Nav.Link>
                 </Link>
                 <Link passHref href="/profile/profile">
-                  <Nav.Link className="clickableLink">Profile</Nav.Link>
+                  <Nav.Link className="clickableLink" style={{ marginRight: '15px' }}>Profile</Nav.Link>
                 </Link>
               </div>
               <div style={{
