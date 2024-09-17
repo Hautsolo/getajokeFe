@@ -1,7 +1,15 @@
 import { clientCredentials } from '../utils/client';
 
-const endpoint = clientCredentials.databaseURL.replace(/"/g, '');
+let endpoint = clientCredentials.databaseURL.replace(/"/g, '');
 
+// Check if the endpoint is using HTTP, and replace it with HTTPS if necessary
+if (endpoint.startsWith('http://')) {
+  endpoint = endpoint.replace('http://', 'https://');
+}
+// Check if the endpoint is using HTTP, and replace it with HTTPS if necessary
+if (endpoint.startsWith('http://')) {
+  endpoint = endpoint.replace('http://', 'https://');
+}
 // GET ALL TAGS
 const getTags = () => new Promise((resolve, reject) => {
   fetch(`${endpoint}tags`, {
