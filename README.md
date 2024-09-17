@@ -1,44 +1,53 @@
-# React/Next.js Django Auth Template
+<p align="center">
+  <img src="https://i.imgur.com/6uLZ8vB.png">
+</p>
 
-## Topics
-- [Get Started](#getting-started)
-- [Starting the Project](#starting-the-project)
-___
-## Getting Started
-### Use Template
-#### 1. To get started, click the GREEN "Use this Template" button at the top of the repo
-<img width="915" alt="Screen Shot 2022-07-06 at 12 54 01 PM" src="https://user-images.githubusercontent.com/29741570/177612998-4aac9237-5a1e-4f13-8ae0-468587521564.png">
+# Watch Party - Client Side
+Full-stack Capstone project for Nashville Software School
 
-#### 2. Make sure YOUR github account is selected in the dropdown and name your project
-<img width="763" alt="Screen Shot 2022-07-06 at 12 54 48 PM" src="https://user-images.githubusercontent.com/29741570/177613126-dd38f678-7553-4f27-8a4a-75680f14d71e.png">
+## About the User 
+- Tom, a college student, starts his mornings by checking the website while having his coffee. He finds that a good laugh helps him feel more positive and ready to tackle his classes.
 
-#### 3. Clone your new repo to your local machine
-#### 4. Go to the **NEXT** section
+## Features 
+- Google Firebase authentication
+- heroku database
+- Users can create, read, update and delete jokes
+- Users can create, read, update and delete profiles
+- Users can create ,read tags
+- Users can view their profile including their profile info, jokes they created/
+- Users can filter jokes by words or tags
+- Users can create, read, update and delete comments on jokes
+- users can sort jokes based on date created or upvotes.
+- Custom CSS
 
-## Starting the Project
-1. Create a Firebase project and set up authentication. Use [these videos](https://vimeo.com/showcase/codetracker-firebase) as a refresher if needed.
-1. Create a `.env` file at the root of the project
-1. Copy/Paste the contents of the `.env.sample` file to your newly created `.env` file.
-1. Copy over all of your Firebase values into the `.env` file.
-1. Open the `package.json` file and change the `name` property to the name of your application, and `author` to  your name.
-1. From your command line, be in the root directory and run `npm install` OR `npm i` for short.
-1. Next, run `npm run prepare`. This command sets up husky to track eslint errors on commit that will make your deploy fail on Netlify.
-1. To start your application, run `npm run dev`. THIS IS THE COMMAND YOU WILL USE TO RUN YOUR DEVELOPMENT SERVER FROM NOW ON.
-1. Open [http://localhost:3000](http://localhost:3000) with your browser.
+## Video Walkthrough
+<div>
+being made</div>
 
-### If you see this, you are set to go!
-<img width="450" alt="Screen Shot 2022-07-06 at 1 07 27 PM" src="https://user-images.githubusercontent.com/29741570/177615077-9b6a75bc-0260-4d29-bb88-bd95a3140687.png">
+## Relevant Links 
+- [Client Side Repo](https://github.com/Hautsolo/getajokeFe)
+- [Figma Wireframe](https://www.figma.com/board/LKcdQYoC6an86skuviJs81/jokegen?node-id=0-1&t=dg0oDxVJrzSgqd7l-0)
+- [ERD](https://dbdiagram.io/d/jokegen-Solomon-Hauter-656e8e6156d8064ca061d994)
+
+## Project Screenshots 
+<img width="1905" alt="Screenshot 2024-03-16 at 10 08 06 AM (2)" src="https://github.com/user-attachments/assets/c8bc6054-c809-4c42-8e70-d54c9983b6e2">
+<img width="1920" alt="Screenshot 2024-03-16 at 10 08 32 AM (2)" src="https://github.com/user-attachments/assets/8b799f33-6c82-440e-967f-e412ef39426b">
+<img width="1904" alt="Screenshot 2024-03-16 at 10 09 59 AM (2)" src="https://github.com/user-attachments/assets/22449d37-838f-45fc-ada8-7c50020206a4">
+<img width="1904" alt="Screenshot 2024-03-16 at 10 23 01 AM (2)" src="https://github.com/user-attachments/assets/7475fdc8-ea42-4bc0-bf9d-080846c1aa76">
+<img width="1905" alt="Screenshot 2024-03-16 at 10 10 54 AM (2)" src="https://github.com/user-attachments/assets/c5fec741-9676-41f4-8ef7-469fe527b79f">
 
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Tech Stack
+- ReactJS
+- Javascript
+- Python
+- Django
+- Google Firebase
+- Figma
+- React Bootstrap
+- CSS
+- Adobe Illustrator
+- heroku
 
-**NOTES:** 
-- If you see the following error, you did not follow all the setup steps correctly and failed to add your Firebase creds. Go back and do that NOW.
-
-<img width="1043" alt="Screen Shot 2022-07-06 at 11 18 45 AM" src="https://user-images.githubusercontent.com/29741570/177612501-c2628f18-4bbd-4de9-aae6-27ffba1172d6.png">
-        
-## Learn More about Next.js
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributors
+- Solomon Hauter (https://github.com/Hautsolo)
