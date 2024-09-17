@@ -1,29 +1,31 @@
 import { useEffect, useState } from 'react';
-// import { useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import RegisterForm from '../../../components/RegisterForm';
 import { getSingleUser } from '../../../api/userData';
-import { useAuth } from '../../../utils/context/authContext';
 
-export default function AddPost() {
-  const [userDetails, setUserDetails] = useState({});
-  const { user } = useAuth();
-  // const { updateUser } = useAuth();
-  // const router = useRouter();
-  // const { id } = router.query;
-
-  const getTheUser = () => {
-    getSingleUser(user.uid).then((theUser) => {
-      setUserDetails(theUser);
-    });
-  };
+export default function EditProfile() {
+  const router = useRouter();
+  const { id } = router.query; // Get the user ID from the URL
+  const [userDetails, setUserDetails] = useState(null); // Initialize as null
 
   useEffect(() => {
-    getTheUser();
-  }, [user]);
+    if (id) {
+      getSingleUser(id).then((data) => {
+        setUserDetails(data); // Set user details once the data is fetched
+      });
+    }
+  }, [id]);
 
-  console.warn('userDetails', userDetails);
+  // Show a loading state while the data is being fetched
+  if (!userDetails) {
+    return <div>Loading...</div>;
+  }
 
+  // Render the form once the data is available
   return (
-    <RegisterForm obj={userDetails} updateUser={() => console.warn('updated')} />
+    <div>
+      <h1>Edit Profile</h1>
+      <RegisterForm obj={userDetails} user={userDetails} updateUser={() => { /* Add logic to update the user */ }} />
+    </div>
   );
 }

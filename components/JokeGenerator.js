@@ -67,7 +67,7 @@ const JokeGenerator = () => {
 
   return (
     <div className="container text-center mt-5">
-      <h1>AI Joke Generator</h1>
+      <h1>Joke Generator</h1>
       <Form>
         <FloatingLabel controlId="floatingJokeType" label="Joke Type" className="mb-3">
           <Form.Control

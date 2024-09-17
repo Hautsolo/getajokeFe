@@ -94,7 +94,14 @@ const deleteJoke = (id) => new Promise((resolve, reject) => {
       'Content-Type': 'application/json',
     },
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        return response.text().then((text) => {
+          throw new Error(text || 'Failed to delete joke');
+        });
+      }
+      return response.text('deleted');
+    })
     .then((data) => resolve(data))
     .catch(reject);
 });
