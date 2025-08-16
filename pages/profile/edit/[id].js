@@ -1,31 +1,104 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { Button } from 'react-bootstrap';
+import Link from 'next/link';
 import RegisterForm from '../../../components/RegisterForm';
-import { getSingleUser } from '../../../api/userData';
+import { getUserByUid } from '../../../api/userData';
+import { useAuth } from '../../../utils/context/authContext';
 
 export default function EditProfile() {
   const router = useRouter();
-  const { id } = router.query; // Get the user ID from the URL
-  const [userDetails, setUserDetails] = useState(null); // Initialize as null
+  const { id } = router.query; // This is the UID of the user to edit
+  const { user } = useAuth(); // Current logged-in user
+  const [userDetails, setUserDetails] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (id) {
-      getSingleUser(id).then((data) => {
-        setUserDetails(data); // Set user details once the data is fetched
+      // Check if user is trying to edit their own profile
+      if (user?.uid !== id) {
+        setError('You can only edit your own profile');
+        setIsLoading(false);
+        return;
+      }
+
+      getUserByUid(id)
+        .then((data) => {
+          if (data) {
+            setUserDetails(data);
+          } else {
+            // Use current user data as fallback
+            setUserDetails({
+              uid: user.uid,
+              displayName: user.displayName,
+              email: user.email,
+              photoURL: user.photoURL
+            });
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching user details:', error);
+          // Use current user data as fallback
+          setUserDetails({
+            uid: user.uid,
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL
+          });
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [id, user]);
+
+  const handleUpdateUser = () => {
+    // Refresh the user data after update
+    if (id) {
+      getUserByUid(id).then((data) => {
+        setUserDetails(data);
       });
     }
-  }, [id]);
+  };
 
-  // Show a loading state while the data is being fetched
-  if (!userDetails) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return <div className="text-center mt-5">Loading profile...</div>;
   }
 
-  // Render the form once the data is available
+  if (error) {
+    return (
+      <div className="text-center mt-5">
+        <h3>Access Denied</h3>
+        <p>{error}</p>
+        <Link href="/profile/profile" passHref>
+          <Button variant="primary">Go to Your Profile</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  if (!userDetails) {
+    return (
+      <div className="text-center mt-5">
+        <h3>User Not Found</h3>
+        <p>Could not load user details for editing.</p>
+        <Link href="/profile/profile" passHref>
+          <Button variant="primary">Go to Your Profile</Button>
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div className="container mt-4">
       <h1>Edit Profile</h1>
-      <RegisterForm obj={userDetails} user={userDetails} updateUser={() => { /* Add logic to update the user */ }} />
+      <RegisterForm 
+        obj={userDetails} 
+        user={userDetails} 
+        updateUser={handleUpdateUser}
+        isEditMode={true}
+      />
     </div>
   );
 }

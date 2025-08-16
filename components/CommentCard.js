@@ -1,99 +1,138 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import Card from 'react-bootstrap/Card';
-import Button from 'react-bootstrap/Button';
-import { deleteComment, updateComment } from '../api/commentData';
-import CommentForm from './Forms/CommentForm';
+import { Button, Card } from 'react-bootstrap';
 import { useAuth } from '../utils/context/authContext';
-import { getSingleUser } from '../api/userData';
+import { deleteComment } from '../api/commentData';
+import { getUserByUid } from '../api/userData';
+import CustomModal from './CustomModal';
 
-function CommentCard({ commentObj, onUpdate }) {
-  const [cardText, setCardText] = useState(<Card.Text>{commentObj.content}</Card.Text>);
-  const [commentUser, setCommentUser] = useState({});
-  const [edit, setEdit] = useState(false);
+export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
   const { user } = useAuth();
+  const [commentAuthor, setCommentAuthor] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState({});
 
   useEffect(() => {
-    getSingleUser(user.uid).then((obj) => {
-      setCommentUser(obj);
+    // Fetch comment author details
+    if (commentObj.uid && !commentAuthor) {
+      console.log('Fetching comment author for UID:', commentObj.uid);
+      getUserByUid(commentObj.uid)
+        .then((authorData) => {
+          console.log('Comment author data:', authorData);
+          setCommentAuthor(authorData);
+        })
+        .catch((error) => {
+          console.error('Error fetching comment author:', error);
+        });
+    }
+  }, [commentObj.uid, commentAuthor]);
+
+  const showConfirmModal = (title, message, onConfirm, type = 'confirm') => {
+    setModalConfig({
+      title,
+      message,
+      type,
+      onConfirm,
+      showCancel: true,
+      confirmText: type === 'danger' ? 'Delete' : 'Yes',
     });
-  }, [user.uid]);
+    setShowModal(true);
+  };
+
+  const showInfoModal = (title, message, type = 'info') => {
+    setModalConfig({
+      title,
+      message,
+      type,
+      showCancel: false,
+    });
+    setShowModal(true);
+  };
 
   const deleteThisComment = () => {
-    if (window.confirm('Delete this comment?')) {
-      deleteComment(commentObj.id).then(() => onUpdate());
+    console.log('Attempting to delete comment:', commentObj.firebaseKey, 'from joke:', jokeFirebaseKey);
+    
+    if (!commentObj.firebaseKey) {
+      showInfoModal('Error', 'Cannot delete comment: Missing comment ID', 'danger');
+      return;
+    }
+
+    showConfirmModal(
+      'Delete Comment',
+      'Are you sure you want to delete this comment?',
+      () => {
+        deleteComment(jokeFirebaseKey, commentObj.firebaseKey)
+          .then(() => {
+            console.log('Comment deleted successfully');
+            showInfoModal('Success', 'Comment deleted successfully!', 'success');
+            onUpdate(); // Refresh the comments
+          })
+          .catch((error) => {
+            console.error('Error deleting comment:', error);
+            showInfoModal('Error', `Failed to delete comment: ${error.message}`, 'danger');
+          });
+      },
+      'danger'
+    );
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Unknown date';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Unknown date';
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Unknown date';
     }
   };
 
-  const handleSubmit = (obj) => {
-    updateComment(obj).then((updatedCommentObj) => {
-      setCardText(<Card.Text>{updatedCommentObj.content}</Card.Text>);
-      onUpdate();
-    });
-    setEdit(false);
-  };
-
-  const handleCancel = () => {
-    setCardText(<Card.Text>{commentObj.content}</Card.Text>);
-    setEdit(false);
-  };
-
-  const editThisComment = () => {
-    setCardText(<CommentForm obj={commentObj} commentPostId={commentObj.post} onSubmit={handleSubmit} onCancel={handleCancel} />);
-    setEdit(true);
+  const getCommentAuthorName = () => {
+    // Try different sources for the author name
+    if (commentAuthor?.displayName) return commentAuthor.displayName;
+    if (commentAuthor?.email) return commentAuthor.email.split('@')[0];
+    if (commentObj.authorName) return commentObj.authorName;
+    if (commentObj.author) return commentObj.author;
+    return 'Unknown User';
   };
 
   return (
-    <Card style={{
-      width: '400px',
-      margin: '15px',
-      background: 'none',
-      display: 'flex',
-      border: '1px solid #F6F6F6',
-      borderRadius: '5px',
-      padding: '5px',
-      color: 'black',
-      position: 'relative',
-    }}
-    >
-      <Card.Body style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '10px',
-      }}
-      >
-        {cardText}
-        {commentObj.user === commentUser.id && !edit && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            marginLeft: 'auto',
-          }}
-          >
-            <Button variant="secondary" size="sm" onClick={editThisComment} style={{ marginBottom: '5px' }}>
-              Edit
-            </Button>
-            <Button variant="danger" size="sm" onClick={deleteThisComment}>
-              Delete
-            </Button>
+    <>
+      <Card className="mb-3" style={{ backgroundColor: '#f8f9fa' }}>
+        <Card.Body>
+          <Card.Text style={{ whiteSpace: 'pre-wrap' }}>
+            {commentObj.content}
+          </Card.Text>
+          
+          <div className="comment-meta" style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+            <div><strong>By:</strong> {getCommentAuthorName()}</div>
+            <div><strong>Date:</strong> {formatDate(commentObj.dateCreated)}</div>
           </div>
-        )}
-      </Card.Body>
-    </Card>
+
+          {user?.uid === commentObj.uid && (
+            <div className="mt-2">
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={deleteThisComment}
+              >
+                🗑️ Delete
+              </Button>
+            </div>
+          )}
+        </Card.Body>
+      </Card>
+
+      <CustomModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        {...modalConfig}
+      />
+    </>
   );
 }
-
-CommentCard.propTypes = {
-  commentObj: PropTypes.shape({
-    id: PropTypes.number,
-    content: PropTypes.string,
-    uid: PropTypes.string,
-    user: PropTypes.string,
-    post: PropTypes.number,
-  }).isRequired,
-  onUpdate: PropTypes.func.isRequired,
-};
-
-export default CommentCard;

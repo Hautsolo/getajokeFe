@@ -4,70 +4,123 @@ import PropTypes from 'prop-types';
 import { Accordion, Button } from 'react-bootstrap';
 import Link from 'next/link';
 import { deleteJoke, getSingleJoke } from '../../api/jokeData';
-import { getCommentsByPostId } from '../../api/commentData';
+import { getComments } from '../../api/commentData';
 import CommentCard from '../../components/CommentCard';
 import CommentForm from '../../components/Forms/CommentForm';
 import { useAuth } from '../../utils/context/authContext';
+import { getUserByUid } from '../../api/userData';
 
 const initialState = {
   content: '',
 };
-export default function ViewPost() {
-  const router = useRouter();
-  const { id } = router.query;
-  const [postDetails, setPostDetails] = useState({});
-  const [comments, setComments] = useState([]);
 
+export default function ViewJoke() {
+  const router = useRouter();
+  const { id } = router.query; // This is the firebaseKey
+  const [jokeDetails, setJokeDetails] = useState({});
+  const [comments, setComments] = useState([]);
+  const [jokeAuthor, setJokeAuthor] = useState(null);
   const { user } = useAuth();
 
-  const postId = Number(id);
-
   const getTheJoke = () => {
-    getSingleJoke(id).then(setPostDetails);
+    if (id) {
+      getSingleJoke(id).then((joke) => {
+        setJokeDetails(joke);
+        // Fetch author information
+        if (joke?.uid) {
+          getUserByUid(joke.uid).then(setJokeAuthor);
+        }
+      });
+    }
   };
 
-  const getCommentsByPost = () => {
-    getCommentsByPostId(id).then(setComments);
+  const getJokeComments = () => {
+    if (id) {
+      getComments(id).then((commentsData) => {
+        setComments(commentsData || []);
+      });
+    }
   };
 
   useEffect(() => {
     getTheJoke();
-    getCommentsByPost();
-  }, []);
+    getJokeComments();
+  }, [id]);
 
-  const deleteThisPost = () => {
-    if (window.confirm(`Delete ${postDetails.title}?`)) {
-      deleteJoke(id).then(() => getTheJoke());
+  const deleteThisJoke = () => {
+    if (window.confirm(`Delete "${jokeDetails.title || jokeDetails.content}"?`)) {
+      deleteJoke(id).then(() => {
+        router.push('/'); // Redirect to home after deletion
+      });
     }
+  };
+
+  const formatTags = (tags) => {
+    if (!tags || !Array.isArray(tags) || tags.length === 0) return 'None';
+    return tags.map((tag, index) => {
+      const tagLabel = typeof tag === 'string' ? tag : tag.label;
+      return index === tags.length - 1 ? tagLabel : `${tagLabel}, `;
+    }).join('');
   };
 
   return (
     <div className="postcontainer">
       <div className="buttonscontainer">
-        {user.uid === postDetails.user?.uid ? (
+        {user?.uid === jokeDetails.uid && (
           <Link href={`/joke/edit/${id}`} passHref>
-            <span className="postbuttons"><Button className="post-card-button" style={{ marginBottom: '15px', bottom: '10px' }}>Edit Post</Button></span>
+            <span className="postbuttons">
+              <Button 
+                className="post-card-button" 
+                style={{ marginBottom: '15px', bottom: '10px' }}
+              >
+                Edit Joke
+              </Button>
+            </span>
           </Link>
-        ) : ''}
-        {user.uid === postDetails.user?.uid ? <span className="postbuttons"><Button onClick={deleteThisPost} className="post-card-button delete-button">Delete Post</Button></span> : ''}
+        )}
+        {user?.uid === jokeDetails.uid && (
+          <span className="postbuttons">
+            <Button 
+              onClick={deleteThisJoke} 
+              className="post-card-button delete-button"
+            >
+              Delete Joke
+            </Button>
+          </span>
+        )}
       </div>
       <div className="postcontents" style={{ width: '400px' }}>
-        <p>posted by: {postDetails.user?.name}</p>
-        <p id="content">{postDetails.content}</p>
-        <p>Tags: {postDetails.tags?.map((tag, index) => (
-          index === postDetails.tags.length - 1 ? tag.label : `${tag.label}, `
-        ))}
-        </p>
+        {jokeDetails.title && (
+          <h3 style={{ marginBottom: '10px' }}>{jokeDetails.title}</h3>
+        )}
+        <p>Posted by: {jokeAuthor?.displayName || 'Unknown User'}</p>
+        <p id="content">{jokeDetails.content}</p>
+        <p>Tags: {formatTags(jokeDetails.tags)}</p>
+        <p>Upvotes: {jokeDetails.upvotes || 0}</p>
+        {jokeDetails.dateCreated && (
+          <p>Created: {new Date(jokeDetails.dateCreated).toLocaleDateString()}</p>
+        )}
+        
         <div className="commentslist">
           <p>Comments:</p>
           {comments.map((comment) => (
-            <CommentCard key={comment.id} commentObj={comment} onUpdate={getCommentsByPost} />
+            <CommentCard 
+              key={comment.firebaseKey || Math.random()} 
+              commentObj={comment} 
+              jokeFirebaseKey={id}
+              onUpdate={getJokeComments} 
+            />
           ))}
           <Accordion className="commentscontainer">
             <Accordion.Item eventKey="0">
-              <Accordion.Header><h5 style={{ color: 'black' }}>Leave a Comment</h5></Accordion.Header>
+              <Accordion.Header>
+                <h5 style={{ color: 'black' }}>Leave a Comment</h5>
+              </Accordion.Header>
               <Accordion.Body>
-                <CommentForm commentPostId={postId} onSubmit={getCommentsByPost} />
+                <CommentForm 
+                  jokeFirebaseKey={id} 
+                  onSubmit={getJokeComments} 
+                />
               </Accordion.Body>
             </Accordion.Item>
           </Accordion>
@@ -77,17 +130,18 @@ export default function ViewPost() {
   );
 }
 
-ViewPost.propTypes = {
-  postDetails: PropTypes.shape({
-    id: PropTypes.number,
+ViewJoke.propTypes = {
+  jokeDetails: PropTypes.shape({
+    firebaseKey: PropTypes.string,
+    title: PropTypes.string,
     content: PropTypes.string,
-    user: PropTypes.string,
-
+    uid: PropTypes.string,
     upvotes: PropTypes.number,
-    tags: PropTypes.arrayOf(PropTypes.string),
+    tags: PropTypes.array,
+    dateCreated: PropTypes.string,
   }),
 };
 
-ViewPost.defaultProps = {
-  postDetails: initialState,
+ViewJoke.defaultProps = {
+  jokeDetails: initialState,
 };

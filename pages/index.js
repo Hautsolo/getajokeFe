@@ -8,11 +8,13 @@ import PostCard from '../components/PostCard';
 
 function Home() {
   const [posts, setPosts] = useState([]);
-  const [sortBy, setSortBy] = useState('date'); // New state for sorting
+  const [sortBy, setSortBy] = useState('date');
   const { user } = useAuth();
 
   const getAllThePosts = () => {
-    getJokes().then(setPosts);
+    getJokes().then((jokes) => {
+      setPosts(jokes);
+    });
   };
 
   useEffect(() => {
@@ -36,10 +38,14 @@ function Home() {
   // Sort posts based on selected criteria
   const sortedPosts = [...posts].sort((a, b) => {
     if (sortBy === 'date') {
-      return new Date(b.created_at) - new Date(a.created_at); // Sort by date
+      const dateA = new Date(a.dateCreated || 0);
+      const dateB = new Date(b.dateCreated || 0);
+      return dateB - dateA; // Sort by date (newest first)
     }
     if (sortBy === 'upvotes') {
-      return b.upvotes_count - a.upvotes_count; // Sort by upvotes
+      const upvotesA = a.upvotes || 0;
+      const upvotesB = b.upvotes || 0;
+      return upvotesB - upvotesA; // Sort by upvotes (highest first)
     }
     return 0;
   });
@@ -47,7 +53,7 @@ function Home() {
   return (
     <>
       <h1 style={{ width: '100%', textAlign: 'center', margin: '20px' }}>
-        Hello, {user.name}! Check out these posts!
+        Hello, {user?.displayName || 'User'}! Check out these jokes!
       </h1>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <div style={{ display: 'flex', marginBottom: '30px', width: '75%' }}>
@@ -55,7 +61,7 @@ function Home() {
           <Form style={{ width: '100%' }}>
             <Form.Control
               type="text"
-              placeholder="Filter by tags"
+              placeholder="Filter by content or tags"
               name="search"
               onChange={searchForPosts}
               required
@@ -76,12 +82,12 @@ function Home() {
         }}
       >
         {(sortedPosts.length > 0) ? sortedPosts.map((post) => (
-          <PostCard key={post.id} postObj={post} onUpdate={getAllThePosts} />
+          <PostCard key={post.firebaseKey} postObj={post} onUpdate={getAllThePosts} />
         )) : (
           <div style={{ display: 'flex', width: '800px', justifyContent: 'center' }}>
-            <h5 style={{ marginRight: '5px' }}>No posts match your search.</h5>
-            <Link passHref href="/post/edit/new">
-              <h5 className="clickableLink">Create a Post?</h5>
+            <h5 style={{ marginRight: '5px' }}>No jokes match your search.</h5>
+            <Link passHref href="/joke/edit/new">
+              <h5 className="clickableLink">Create a Joke?</h5>
             </Link>
           </div>
         )}

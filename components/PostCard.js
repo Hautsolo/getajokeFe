@@ -1,92 +1,240 @@
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import Link from 'next/link';
-import { ButtonGroup } from 'react-bootstrap';
-import { useState } from 'react';
-import { deleteJoke, upvoteJoke } from '../api/jokeData'; // Import upvoteJoke function
+import { Button, Card } from 'react-bootstrap';
+import { useRouter } from 'next/router';
+import { deleteJoke, upvoteJoke } from '../api/jokeData';
+import { getUserByUid } from '../api/userData';
 import { useAuth } from '../utils/context/authContext';
+import CustomModal from './CustomModal';
 
 function PostCard({ postObj, onUpdate }) {
+  const router = useRouter();
   const { user } = useAuth();
-  const [upvotes, setUpvotes] = useState(postObj.upvotes_count); // Manage upvotes locally
+  const [jokeAuthor, setJokeAuthor] = useState(null);
+  const [hasUpvoted, setHasUpvoted] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState({});
+
+  useEffect(() => {
+    console.log('PostCard mounted with postObj:', postObj);
+    console.log('Post UID:', postObj.uid, 'Current user UID:', user?.uid);
+    
+    // Fetch author details if we have a UID and haven't fetched yet
+    if (postObj.uid && !jokeAuthor) {
+      console.log('Fetching author for UID:', postObj.uid);
+      getUserByUid(postObj.uid)
+        .then((authorData) => {
+          console.log('Author data fetched:', authorData);
+          setJokeAuthor(authorData);
+        })
+        .catch((error) => {
+          console.error('Error fetching author:', error);
+          setJokeAuthor(null);
+        });
+    }
+    
+    // Check if current user has already upvoted this joke
+    if (user?.uid && postObj.upvoters) {
+      setHasUpvoted(postObj.upvoters.includes(user.uid));
+    }
+  }, [postObj.uid, postObj.upvoters, jokeAuthor, user]);
+
+  const showConfirmModal = (title, message, onConfirm, type = 'confirm') => {
+    setModalConfig({
+      title,
+      message,
+      type,
+      onConfirm,
+      showCancel: true,
+      confirmText: type === 'danger' ? 'Delete' : 'Yes',
+    });
+    setShowModal(true);
+  };
+
+  const showInfoModal = (title, message, type = 'info') => {
+    setModalConfig({
+      title,
+      message,
+      type,
+      showCancel: false,
+    });
+    setShowModal(true);
+  };
 
   const deleteThisPost = () => {
-    if (window.confirm(`Delete ${postObj.content}?`)) {
-      deleteJoke(postObj.id).then(() => onUpdate());
-    }
+    showConfirmModal(
+      'Delete Joke',
+      `Are you sure you want to delete "${postObj.title || postObj.content?.substring(0, 50)}..."?`,
+      () => {
+        deleteJoke(postObj.firebaseKey).then(() => {
+          showInfoModal('Success', 'Joke deleted successfully!', 'success');
+          onUpdate();
+        }).catch((error) => {
+          showInfoModal('Error', `Failed to delete joke: ${error.message}`, 'danger');
+        });
+      },
+      'danger'
+    );
   };
 
   const handleUpvote = () => {
-    upvoteJoke(postObj.id).then((updatedPost) => {
-      setUpvotes(updatedPost.upvotes_count); // Update local state with new upvotes count
-      onUpdate(); // Optionally call onUpdate to refresh the post list
-    }).catch((error) => {
-      console.error('Failed to upvote joke:', error);
-    });
+    if (!user?.uid) {
+      showInfoModal('Sign In Required', 'Please sign in to upvote jokes!', 'warning');
+      return;
+    }
+    
+    if (hasUpvoted) {
+      showInfoModal('Already Upvoted', 'You have already upvoted this joke!', 'info');
+      return;
+    }
+
+    upvoteJoke(postObj.firebaseKey, user.uid)
+      .then((result) => {
+        console.log('Upvote successful:', result);
+        setHasUpvoted(true);
+        showInfoModal('Success', 'Joke upvoted successfully! 🎉', 'success');
+        onUpdate(); // Refresh the joke data
+      })
+      .catch((error) => {
+        console.error('Upvote failed:', error);
+        if (error.message.includes('already upvoted')) {
+          setHasUpvoted(true);
+          showInfoModal('Already Upvoted', 'You have already upvoted this joke!', 'info');
+        } else {
+          showInfoModal('Error', `Failed to upvote: ${error.message}`, 'danger');
+        }
+      });
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Unknown date';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Unknown date';
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Unknown date';
+    }
+  };
+
+  const formatTags = (tags) => {
+    if (!tags || !Array.isArray(tags)) return 'No tags';
+    return tags.join(', ');
+  };
+
+  const getAuthorName = () => {
+    console.log('Getting author name. jokeAuthor:', jokeAuthor, 'postObj.authorName:', postObj.authorName);
+    
+    // Try different sources for the author name
+    if (jokeAuthor?.displayName) return jokeAuthor.displayName;
+    if (jokeAuthor?.email) return jokeAuthor.email.split('@')[0];
+    if (postObj.authorName) return postObj.authorName;
+    if (postObj.author) return postObj.author;
+    // Fallback to current user if this is their post
+    if (postObj.uid && user?.uid && postObj.uid === user.uid) {
+      return user.displayName || (user.email ? user.email.split('@')[0] : 'Unknown User');
+    }
+    
+    return 'Unknown User';
+  };
+
+  const handleUserClick = () => {
+    if (postObj.uid) {
+      router.push(`/profile/${postObj.uid}`);
+    }
   };
 
   return (
-    <Card className="post-card" style={{ width: '600px' }}>
-      <Card.Body style={{ padding: '10px', color: 'black', paddingBottom: '5px' }}>
-        <Card.Title id="jokcontent">{postObj.content}</Card.Title>
+    <>
+      <Card className="post-card" style={{ width: '600px' }}>
+        <Card.Body>
+          <Card.Title>{postObj.title || 'Untitled Joke'}</Card.Title>
+          <Card.Text style={{ fontSize: '18px', minHeight: '100px', whiteSpace: 'pre-wrap' }}>
+            {postObj.content}
+          </Card.Text>
+          
+          <div className="post-meta" style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
+            <div>
+              <strong>Posted by:</strong>{' '}
+              <span 
+                style={{ color: '#007bff', cursor: 'pointer', textDecoration: 'underline' }}
+                onClick={handleUserClick}
+              >
+                {getAuthorName()}
+              </span>
+            </div>
+            <div><strong>Date:</strong> {formatDate(postObj.dateCreated)}</div>
+            <div><strong>Tags:</strong> {formatTags(postObj.tags)}</div>
+            <div><strong>Upvotes:</strong> {postObj.upvotes || 0}</div>
+          </div>
 
-        <div style={{ minHeight: '24px', marginBottom: '16px', fontSize: '14px' }}>
-          {postObj.tags.length > 0 ? (
-            <p className="post-card-list-group">
-              Tags: {postObj.tags?.map((tag) => tag.label).join(', ')}
-            </p>
-          ) : ''}
-          <p>Upvotes: {upvotes}</p> {/* Display upvotes */}
-          <p>Created at: {new Date(postObj.created_at).toLocaleDateString()}</p> {/* Display created_at */}
-        </div>
-
-        <ButtonGroup style={{ width: '100%', display: 'flex', alignItems: 'bottom' }}>
-          <Link href={`/joke/${postObj.id}`} passHref>
-            <Button className="post-card-button">View</Button>
-          </Link>
-          {user && user.uid === postObj.user.uid ? (
-            <Link href={`/joke/edit/${postObj.id}`} passHref>
-              <Button className="post-card-button">Edit</Button>
-            </Link>
-          ) : null}
-          {user && user.uid === postObj.user.uid ? (
-            <Button className="delete-button post-card-button" onClick={deleteThisPost}>
-              Delete
+          <div className="button-group" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <Button
+              variant={hasUpvoted ? 'success' : 'outline-primary'}
+              onClick={handleUpvote}
+              disabled={hasUpvoted}
+              size="sm"
+            >
+              {hasUpvoted ? '👍 Upvoted ✓' : '👍 Upvote'}
             </Button>
-          ) : null}
-          <Button className="post-card-button" onClick={handleUpvote}>Upvote</Button> {/* Add upvote button */}
-        </ButtonGroup>
 
-        <Card.Title style={{
-          fontSize: '20px', textAlign: 'right', padding: '0', marginTop: '5px',
-        }}
-        >
-          Posted by <Link href={`/profile/${postObj.user?.uid}`}>{postObj.user?.username}</Link>
-        </Card.Title>
-      </Card.Body>
-    </Card>
+            {user?.uid === postObj.uid && (
+              <>
+                <Button
+                  variant="outline-secondary"
+                  onClick={() => router.push(`/joke/edit/${postObj.firebaseKey}`)}
+                  size="sm"
+                >
+                  ✏️ Edit
+                </Button>
+                <Button
+                  variant="outline-danger"
+                  onClick={deleteThisPost}
+                  size="sm"
+                >
+                  🗑️ Delete
+                </Button>
+              </>
+            )}
+
+            <Button
+              variant="outline-info"
+              onClick={() => router.push(`/joke/${postObj.firebaseKey}`)}
+              size="sm"
+            >
+              💬 Comments
+            </Button>
+          </div>
+        </Card.Body>
+      </Card>
+
+      <CustomModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        {...modalConfig}
+      />
+    </>
   );
 }
 
 PostCard.propTypes = {
   postObj: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    content: PropTypes.string.isRequired,
-    postDate: PropTypes.string,
-    description: PropTypes.string,
-    user: PropTypes.shape({
-      id: PropTypes.number,
-      username: PropTypes.string.isRequired,
-      uid: PropTypes.string.isRequired,
-      bio: PropTypes.string,
-    }).isRequired,
-    upvotes_count: PropTypes.number.isRequired,
-    tags: PropTypes.arrayOf(PropTypes.shape({
-      id: PropTypes.number,
-      label: PropTypes.string,
-    })).isRequired,
-    created_at: PropTypes.string.isRequired, // Add this line
+    firebaseKey: PropTypes.string,
+    title: PropTypes.string,
+    content: PropTypes.string,
+    uid: PropTypes.string,
+    authorName: PropTypes.string,
+    author: PropTypes.string,
+    dateCreated: PropTypes.string,
+    tags: PropTypes.array,
+    upvotes: PropTypes.number,
+    upvoters: PropTypes.array,
   }).isRequired,
   onUpdate: PropTypes.func.isRequired,
 };

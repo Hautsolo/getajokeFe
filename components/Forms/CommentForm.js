@@ -5,28 +5,29 @@ import { useAuth } from '../../utils/context/authContext';
 import { createComment, updateComment } from '../../api/commentData';
 
 const initialState = {
-  id: 0,
   content: '',
-  joke: 0,
-  user: 0,
-  created_on: '',
+  uid: '',
+  author: '',
+  dateCreated: '',
 };
 
 export default function CommentForm({
-  obj, commentPostId, onSubmit,
+  obj, jokeFirebaseKey, onSubmit,
 }) {
   const [formInput, setFormInput] = useState(initialState);
   const { user } = useAuth();
 
-  // IF WE ARE EDITING A COMMENT, THIS WILL SET THE FORMINPUT STATE TO THE VALUES OF THE COMMENT, BUT IF WE ARE CREATING A NEW COMMENT, IT WILL SET THE POST_ID OF THE INITAL STATE TO THE POST_ID ON WHICH WE ARE COMMENTING
   useEffect(() => {
-    if (obj.id) {
+    if (obj?.firebaseKey) {
       setFormInput(obj);
     } else {
-      initialState.joke = commentPostId;
-      setFormInput(initialState);
+      setFormInput({
+        ...initialState,
+        uid: user?.uid || '',
+        author: user?.displayName || '',
+      });
     }
-  }, [obj, commentPostId]);
+  }, [obj, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,23 +39,31 @@ export default function CommentForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (obj.id) {
+    
+    if (obj?.firebaseKey) {
+      // Updating existing comment
       const updatedComment = {
-        id: obj.id,
-        user: obj.user,
-        content: formInput.content,
-        created_on: obj.created_on,
-        joke: obj.joke,
+        ...formInput,
+        firebaseKey: obj.firebaseKey,
       };
-      updateComment(updatedComment).then(onSubmit);
+      updateComment(jokeFirebaseKey, obj.firebaseKey, updatedComment).then(() => {
+        onSubmit();
+      });
     } else {
+      // Creating new comment
       const payload = {
-        user: user.id,
         content: formInput.content,
-        joke: commentPostId,
+        uid: user.uid,
+        authorName: user.displayName || user.email || 'Unknown User',
+        dateCreated: new Date().toISOString(),
       };
-      createComment(user.id, commentPostId, payload).then(() => {
-        setFormInput(initialState);
+      
+      createComment(jokeFirebaseKey, payload).then(() => {
+        setFormInput({
+          ...initialState,
+          uid: user?.uid || '',
+          author: user?.displayName || '',
+        });
         onSubmit();
       });
     }
@@ -62,19 +71,21 @@ export default function CommentForm({
 
   return (
     <Form
-      style={
-        {
-          width: '400px', display: 'flex',
-        }
-      }
+      style={{
+        width: '400px', 
+        display: 'flex',
+      }}
       onSubmit={handleSubmit}
     >
-
-      {/* CONTENT TEXTAREA  */}
-      <FloatingLabel controlId="floatingTextarea" label={obj.id ? 'Update your comment' : 'Enter your comment'} className="mb-3">
+      {/* CONTENT TEXTAREA */}
+      <FloatingLabel 
+        controlId="floatingTextarea" 
+        label={obj?.firebaseKey ? 'Update your comment' : 'Enter your comment'} 
+        className="mb-3"
+      >
         <Form.Control
           as="textarea"
-          placeholder={obj.id ? 'Update your comment' : 'Enter your comment'}
+          placeholder={obj?.firebaseKey ? 'Update your comment' : 'Enter your comment'}
           style={{ height: '100px', width: '360px' }}
           name="content"
           value={formInput.content}
@@ -82,23 +93,27 @@ export default function CommentForm({
           required
         />
 
-        {/* SUBMIT BUTTON  */}
-        <Button style={{ marginTop: '10px' }} type="submit">{obj.id ? 'Update' : 'Add'} Comment</Button>
+        {/* SUBMIT BUTTON */}
+        <Button 
+          style={{ marginTop: '10px' }} 
+          type="submit"
+        >
+          {obj?.firebaseKey ? 'Update' : 'Add'} Comment
+        </Button>
       </FloatingLabel>
-
     </Form>
   );
 }
 
 CommentForm.propTypes = {
   obj: PropTypes.shape({
-    id: PropTypes.number,
-    user: PropTypes.number,
+    firebaseKey: PropTypes.string,
     content: PropTypes.string,
-    joke: PropTypes.number,
-    created_on: PropTypes.string,
+    uid: PropTypes.string,
+    author: PropTypes.string,
+    dateCreated: PropTypes.string,
   }),
-  commentPostId: PropTypes.number.isRequired,
+  jokeFirebaseKey: PropTypes.string.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };
 

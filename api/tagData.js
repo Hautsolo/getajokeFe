@@ -1,100 +1,80 @@
 import { clientCredentials } from '../utils/client';
 
-let endpoint = clientCredentials.databaseURL.replace(/"/g, '');
+const endpoint = clientCredentials.databaseURL;
 
-// Check if the endpoint is using HTTP, and replace it with HTTPS if necessary
-if (endpoint.startsWith('http://')) {
-  endpoint = endpoint.replace('http://', 'https://');
-}
-// Check if the endpoint is using HTTP, and replace it with HTTPS if necessary
-if (endpoint.startsWith('http://')) {
-  endpoint = endpoint.replace('http://', 'https://');
-}
 // GET ALL TAGS
 const getTags = () => new Promise((resolve, reject) => {
-  fetch(`${endpoint}tags`, {
+  fetch(`${endpoint}/tags.json`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
     },
   })
     .then((response) => response.json())
-    .then((data) => resolve(Object.values(data)))
+    .then((data) => {
+      if (data) {
+        resolve(Object.values(data));
+      } else {
+        resolve([]);
+      }
+    })
     .catch(reject);
 });
 
-// GET TAGS BY POST ID
-const getTagsByPostId = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}tags?joke_id=${id}`, {
+// GET SINGLE TAG
+const getSingleTag = (firebaseKey) => new Promise((resolve, reject) => {
+  fetch(`${endpoint}/tags/${firebaseKey}.json`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
     },
   })
     .then((response) => response.json())
-    .then((data) => resolve(Object.values(data)))
-    .catch(reject);
-});
-
-// GET ALL TAGS MADE BY A SINGLE USER
-const getTagsForSingleUser = (uid) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}tags?uid=${uid}"`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => resolve(Object.values(data)))
-    .catch(reject);
-});
-
-// GET A SINGLE TAG
-const getSingleTag = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}tags/${id}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => resolve(Object.values(data)))
+    .then((data) => resolve(data))
     .catch(reject);
 });
 
 // CREATE TAG
 const createTag = (payload) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}tags`, {
+  fetch(`${endpoint}/tags.json`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      label: payload,
-    }),
+    body: JSON.stringify(payload),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to create tag');
+      }
+      return response.json();
+    })
     .then((data) => resolve(data))
     .catch(reject);
 });
 
 // UPDATE TAG
 const updateTag = (payload) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}tags/${payload.id}`, {
-    method: 'PUT',
+  fetch(`${endpoint}/tags/${payload.firebaseKey}.json`, {
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to update tag');
+      }
+      return response.json();
+    })
     .then((data) => resolve(data))
     .catch(reject);
 });
 
 // DELETE TAG
-const deleteTag = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}tags/${id}`, {
+const deleteTag = (firebaseKey) => new Promise((resolve, reject) => {
+  fetch(`${endpoint}/tags/${firebaseKey}.json`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -106,5 +86,9 @@ const deleteTag = (id) => new Promise((resolve, reject) => {
 });
 
 export {
-  getTags, getTagsByPostId, getTagsForSingleUser, getSingleTag, createTag, updateTag, deleteTag,
+  getTags,
+  getSingleTag,
+  createTag,
+  updateTag,
+  deleteTag,
 };

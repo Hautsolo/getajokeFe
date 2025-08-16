@@ -1,74 +1,100 @@
 // Context API Docs: https://beta.reactjs.org/learn/passing-data-deeply-with-context
 
 import React, {
-  createContext, //
+  createContext,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from 'react';
-import { checkUser } from '../auth';
 import { firebase } from '../client';
+import { getUserByUid, createUser } from '../../api/userData';
 
 const AuthContext = createContext();
+AuthContext.displayName = 'AuthContext';
 
-AuthContext.displayName = 'AuthContext'; // Context object accepts a displayName string property. React DevTools uses this string to determine what to display for the context. https://reactjs.org/docs/context.html#contextdisplayname
-
-const AuthProvider = (props) => {
+function AuthProvider(props) {
   const [user, setUser] = useState(null);
   const [oAuthUser, setOAuthUser] = useState(null);
+  const [initializing, setInitializing] = useState(true);
 
-  // there are 3 states for the user:
-  // null = application initial state, not yet loaded
-  // false = user is not logged in, but the app has loaded
-  // an object/value = user is logged in
-
-  const updateUser = useMemo(
-    () => (uid) => checkUser(uid).then((gamerInfo) => {
-      setUser({ fbUser: oAuthUser, ...gamerInfo });
-    }),
-    [oAuthUser],
-  );
+  const setFinalUser = (fbUser, dbUser) => {
+    const finalUserData = fbUser
+      ? {
+          fbUser,
+          uid: fbUser.uid,
+          displayName: fbUser.displayName,
+          email: fbUser.email,
+          photoURL: fbUser.photoURL,
+          ...(dbUser || {}),
+        }
+      : false;
+    setUser(finalUserData);
+  };
 
   useEffect(() => {
-    firebase.auth().onAuthStateChanged((fbUser) => {
+    const unsub = firebase.auth().onAuthStateChanged((fbUser) => {
       if (fbUser) {
         setOAuthUser(fbUser);
-        checkUser(fbUser.uid).then((gamerInfo) => {
-          let userObj = {};
-          if ('null' in gamerInfo) {
-            userObj = gamerInfo;
-          } else {
-            userObj = { fbUser, uid: fbUser.uid, ...gamerInfo };
-          }
-          setUser(userObj);
-        });
+        getUserByUid(fbUser.uid)
+          .then((userInfo) => {
+            if (userInfo) {
+              setFinalUser(fbUser, userInfo);
+            } else {
+              const newUser = {
+                uid: fbUser.uid,
+                displayName: fbUser.displayName,
+                email: fbUser.email,
+                photoURL: fbUser.photoURL,
+              };
+              createUser(newUser)
+                .then((response) => {
+                  const firebaseKey = response.name;
+                  setFinalUser(fbUser, { ...newUser, firebaseKey });
+                })
+                .catch(() => {
+                  setFinalUser(fbUser, newUser);
+                })
+                .finally(() => setInitializing(false));
+              return;
+            }
+          })
+          .catch(() => setFinalUser(fbUser, null))
+          .finally(() => setInitializing(false));
       } else {
+        // Signed out
         setOAuthUser(false);
-        setUser(false);
+        setFinalUser(null, null); // sets user to false
+        setInitializing(false);
       }
-    }); // creates a single global listener for auth state changed
+    });
+    return () => unsub();
   }, []);
 
+  const updateUser = (uidParam) => {
+    const uid = uidParam || oAuthUser?.uid;
+    if (!uid) return Promise.resolve();
+    return getUserByUid(uid).then((userInfo) => {
+      if (oAuthUser) setFinalUser(oAuthUser, userInfo || {});
+    });
+  };
+
   const value = useMemo(
-    // https://reactjs.org/docs/hooks-reference.html#usememo
     () => ({
       user,
+      userLoading: initializing,
+      oAuthUser,
       updateUser,
-      userLoading: user === null || oAuthUser === null,
-      // as long as user === null, will be true
-      // As soon as the user value !== null, value will be false
     }),
-    [user, oAuthUser, updateUser],
+    [user, initializing, oAuthUser],
   );
 
   return <AuthContext.Provider value={value} {...props} />;
-};
+}
 const AuthConsumer = AuthContext.Consumer;
 
 const useAuth = () => {
   const context = useContext(AuthContext);
-
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }

@@ -1,111 +1,110 @@
 import { clientCredentials } from '../utils/client';
 
-let endpoint = clientCredentials.databaseURL.replace(/"/g, '');
-
-// Check if the endpoint is using HTTP, and replace it with HTTPS if necessary
-if (endpoint.startsWith('http://')) {
-  endpoint = endpoint.replace('http://', 'https://');
-}
-// GET ALL COMMENTS
-const getComments = () => new Promise((resolve, reject) => {
-  fetch(`${endpoint}comments`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => resolve(Object.values(data)))
-    .catch(reject);
-});
-
-// GET COMMENTS BY POST ID
-const getCommentsByPostId = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}comments?joke_id=${id}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => resolve(Object.values(data)))
-    .catch(reject);
-});
-
-// GET ALL COMMENTS MADE BY A SINGLE USER
-const getCommentsForSingleUser = (uid) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}comments?uid=${uid}"`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => resolve(Object.values(data)))
-    .catch(reject);
-});
-
-// GET A SINGLE COMMENT
-const getSingleComment = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}comments/${id}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => resolve(Object.values(data)))
-    .catch(reject);
-});
+const endpoint = clientCredentials.databaseURL;
 
 // CREATE COMMENT
-const createComment = (userId, id, comment) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}comments?joke_id=${id}`, {
+const createComment = (jokeFirebaseKey, payload) => new Promise((resolve, reject) => {
+  fetch(`${endpoint}/jokes/${jokeFirebaseKey}/comments.json`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      user_id: userId,
-      content: comment.content,
-    }),
+    body: JSON.stringify(payload),
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Failed to create comment');
       }
       return response.json();
     })
     .then((data) => resolve(data))
     .catch(reject);
 });
+
+// GET COMMENTS FOR A JOKE
+const getComments = (jokeFirebaseKey) => new Promise((resolve, reject) => {
+  fetch(`${endpoint}/jokes/${jokeFirebaseKey}/comments.json`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data) {
+        // Convert Firebase object to array while preserving firebaseKey
+        const commentsWithKeys = Object.keys(data).map(key => ({
+          ...data[key],
+          firebaseKey: key
+        }));
+        resolve(commentsWithKeys);
+      } else {
+        resolve([]);
+      }
+    })
+    .catch(reject);
+});
+
 // UPDATE COMMENT
-const updateComment = (payload) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}comments/${payload.id}`, {
-    method: 'PUT',
+const updateComment = (jokeFirebaseKey, commentFirebaseKey, payload) => new Promise((resolve, reject) => {
+  fetch(`${endpoint}/jokes/${jokeFirebaseKey}/comments/${commentFirebaseKey}.json`, {
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to update comment');
+      }
+      return response.json();
+    })
     .then((data) => resolve(data))
     .catch(reject);
 });
 
 // DELETE COMMENT
-const deleteComment = (id) => new Promise((resolve, reject) => {
-  fetch(`${endpoint}comments/${id}`, {
+const deleteComment = (jokeFirebaseKey, commentFirebaseKey) => new Promise((resolve, reject) => {
+  fetch(`${endpoint}/jokes/${jokeFirebaseKey}/comments/${commentFirebaseKey}.json`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
     },
   })
-    .then((response) => response)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to delete comment');
+      }
+      return response.json();
+    })
     .then((data) => resolve(data))
     .catch(reject);
 });
 
+// GET SINGLE COMMENT
+const getSingleComment = (jokeFirebaseKey, commentFirebaseKey) => new Promise((resolve, reject) => {
+  fetch(`${endpoint}/jokes/${jokeFirebaseKey}/comments/${commentFirebaseKey}.json`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data) {
+        resolve({ ...data, firebaseKey: commentFirebaseKey });
+      } else {
+        resolve(null);
+      }
+    })
+    .catch(reject);
+});
+
 export {
-  getComments, getCommentsByPostId, getCommentsForSingleUser, getSingleComment, createComment, updateComment, deleteComment,
+  createComment,
+  getComments,
+  updateComment,
+  deleteComment,
+  getSingleComment,
 };
