@@ -33,18 +33,18 @@ export default function EditProfile() {
               uid: user.uid,
               displayName: user.displayName,
               email: user.email,
-              photoURL: user.photoURL
+              photoURL: user.photoURL,
             });
           }
         })
-        .catch((error) => {
-          console.error('Error fetching user details:', error);
+        .catch((err) => {
+          console.error('Error fetching user details:', err);
           // Use current user data as fallback
           setUserDetails({
             uid: user.uid,
             displayName: user.displayName,
             email: user.email,
-            photoURL: user.photoURL
+            photoURL: user.photoURL,
           });
         })
         .finally(() => {
@@ -93,11 +93,11 @@ export default function EditProfile() {
   return (
     <div className="container mt-4">
       <h1>Edit Profile</h1>
-      <RegisterForm 
-        obj={userDetails} 
-        user={userDetails} 
+      <RegisterForm
+        obj={userDetails}
+        user={userDetails}
         updateUser={handleUpdateUser}
-        isEditMode={true}
+        isEditMode
       />
     </div>
   );

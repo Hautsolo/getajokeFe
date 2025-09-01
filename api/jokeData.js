@@ -32,11 +32,11 @@ const getJokesForSingleUser = (uid) => new Promise((resolve, reject) => {
     resolve([]);
     return;
   }
-  
+
   const normalized = String(uid);
   console.log('=== getJokesForSingleUser ===');
   console.log('Searching for UID:', normalized);
-  
+
   // Try Firebase query first
   fetch(`${endpoint}/jokes.json?orderBy="uid"&equalTo="${normalized}"`, {
     method: 'GET',
@@ -172,29 +172,29 @@ const upvoteJoke = (firebaseKey, userId) => new Promise((resolve, reject) => {
       reject(new Error('Joke not found'));
       return;
     }
-    
+
     // Initialize upvoters array if it doesn't exist
     const upvoters = joke.upvoters || [];
-    
+
     // Check if user has already upvoted
     if (upvoters.includes(userId)) {
       reject(new Error('You have already upvoted this joke'));
       return;
     }
-    
+
     // Add user to upvoters list
     const newUpvoters = [...upvoters, userId];
     const newUpvoteCount = newUpvoters.length;
-    
+
     // Update the joke with new upvote data
     fetch(`${endpoint}/jokes/${firebaseKey}.json`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         upvotes: newUpvoteCount,
-        upvoters: newUpvoters 
+        upvoters: newUpvoters
       }),
     })
       .then((response) => {

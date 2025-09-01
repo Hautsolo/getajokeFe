@@ -55,18 +55,18 @@ export default function JokeGenerator() {
     try {
       // Build API URL
       let url = 'https://v2.jokeapi.dev/joke/';
-      
+
       // Add category
       url += jokeCategory === 'Any' ? 'Any' : jokeCategory;
-      
+
       // Add parameters
       const params = [];
-      
+
       // Add type filter
       if (jokeType !== 'any') {
         params.push(`type=${jokeType}`);
       }
-      
+
       // Add content filtering
       if (jokeFlags.length > 0) {
         const allFlags = ['nsfw', 'religious', 'political', 'racist', 'sexist', 'explicit'];
@@ -78,7 +78,7 @@ export default function JokeGenerator() {
         // If no flags selected, use safe mode
         params.push('safe-mode');
       }
-      
+
       if (params.length > 0) {
         url += '?' + params.join('&');
       }
@@ -86,13 +86,13 @@ export default function JokeGenerator() {
       console.log('Fetching joke from:', url);
 
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (data.error) {
         throw new Error(data.message || 'Failed to fetch joke');
       }
@@ -113,7 +113,7 @@ export default function JokeGenerator() {
 
       setGeneratedJoke(jokeContent);
       setJokeTitle(autoTitle);
-      
+
     } catch (error) {
       console.error('Error generating joke:', error);
       setError(error.message || 'Failed to generate joke. Please try again.');
@@ -173,16 +173,16 @@ export default function JokeGenerator() {
       const result = await createJoke(payload);
       console.log('=== GENERATOR JOKE CREATED ===');
       console.log('Create result:', result);
-      
+
       showInfoModal('Success', '🎉 Joke posted successfully to your collection!', 'success');
-      
+
       // Reset form
       setGeneratedJoke('');
       setJokeTitle('');
       setJokeCategory('Any');
       setJokeType('any');
       setJokeFlags([]);
-      
+
     } catch (error) {
       console.error('=== ERROR POSTING GENERATOR JOKE ===');
       console.error('Error details:', error);
@@ -213,11 +213,11 @@ export default function JokeGenerator() {
         <Card className="mb-4">
           <Card.Body>
             <h5>Customize Your Joke</h5>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Category</Form.Label>
-              <Form.Select 
-                value={jokeCategory} 
+              <Form.Select
+                value={jokeCategory}
                 onChange={(e) => setJokeCategory(e.target.value)}
                 style={{ color: 'black' }}
               >
@@ -229,8 +229,8 @@ export default function JokeGenerator() {
 
             <Form.Group className="mb-3">
               <Form.Label>Joke Type</Form.Label>
-              <Form.Select 
-                value={jokeType} 
+              <Form.Select
+                value={jokeType}
                 onChange={(e) => setJokeType(e.target.value)}
                 style={{ color: 'black' }}
               >
@@ -255,8 +255,8 @@ export default function JokeGenerator() {
               </Form.Text>
             </Form.Group>
 
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               onClick={generateJoke}
               disabled={isLoading}
               className="w-100"
@@ -293,10 +293,10 @@ export default function JokeGenerator() {
                   style={{ color: 'black' }}
                 />
               </Form.Group>
-              
-              <Card.Text 
-                style={{ 
-                  fontSize: '18px', 
+
+              <Card.Text
+                style={{
+                  fontSize: '18px',
                   whiteSpace: 'pre-wrap',
                   backgroundColor: '#f8f9fa',
                   padding: '15px',
@@ -306,17 +306,17 @@ export default function JokeGenerator() {
               >
                 {generatedJoke}
               </Card.Text>
-              
+
               <div className="d-flex gap-2 justify-content-center">
-                <Button 
-                  variant="success" 
+                <Button
+                  variant="success"
                   onClick={handlePostJoke}
                   disabled={isLoading}
                 >
                   {isLoading ? 'Posting...' : '📝 Post This Joke'}
                 </Button>
-                <Button 
-                  variant="secondary" 
+                <Button
+                  variant="secondary"
                   onClick={generateJoke}
                   disabled={isLoading}
                 >

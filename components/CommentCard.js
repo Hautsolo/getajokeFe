@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Card } from 'react-bootstrap';
+import PropTypes from 'prop-types';
 import { useAuth } from '../utils/context/authContext';
 import { deleteComment } from '../api/commentData';
 import { getUserByUid } from '../api/userData';
@@ -50,7 +51,7 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
 
   const deleteThisComment = () => {
     console.log('Attempting to delete comment:', commentObj.firebaseKey, 'from joke:', jokeFirebaseKey);
-    
+
     if (!commentObj.firebaseKey) {
       showInfoModal('Error', 'Cannot delete comment: Missing comment ID', 'danger');
       return;
@@ -79,13 +80,13 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
     if (!dateString) return 'Unknown date';
     try {
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Unknown date';
+      if (Number.isNaN(date.getTime())) return 'Unknown date';
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       });
     } catch (error) {
       return 'Unknown date';
@@ -108,7 +109,7 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
           <Card.Text style={{ whiteSpace: 'pre-wrap' }}>
             {commentObj.content}
           </Card.Text>
-          
+
           <div className="comment-meta" style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
             <div><strong>By:</strong> {getCommentAuthorName()}</div>
             <div><strong>Date:</strong> {formatDate(commentObj.dateCreated)}</div>
@@ -136,3 +137,16 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
     </>
   );
 }
+
+CommentCard.propTypes = {
+  commentObj: PropTypes.shape({
+    uid: PropTypes.string,
+    firebaseKey: PropTypes.string,
+    content: PropTypes.string,
+    authorName: PropTypes.string,
+    author: PropTypes.string,
+    dateCreated: PropTypes.string,
+  }).isRequired,
+  jokeFirebaseKey: PropTypes.string.isRequired,
+  onUpdate: PropTypes.func.isRequired,
+};

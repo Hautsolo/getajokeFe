@@ -14,7 +14,7 @@ export default function UserProfile() {
   const [posts, setPosts] = useState([]);
   const [userDetails, setUserDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [, setError] = useState('');
 
   const fallbackDeriveFromJokes = async () => {
     // If user profile isn't found, we can try to infer displayName from jokes
@@ -37,7 +37,6 @@ export default function UserProfile() {
           } else {
             // No profile; try to derive from jokes
             fallbackDeriveFromJokes().finally(() => setIsLoading(false));
-            return;
           }
         })
         .catch(() => fallbackDeriveFromJokes())
@@ -51,13 +50,13 @@ export default function UserProfile() {
       getJokesForSingleUser(id)
         .then((jokes) => {
           console.log('=== JOKES FOR USER ===', jokes?.length);
-          console.log('Found jokes:', jokes?.map(j => ({ 
-            title: j.title, 
-            uid: j.uid, 
+          console.log('Found jokes:', jokes?.map((j) => ({
+            title: j.title,
+            uid: j.uid,
             authorName: j.authorName,
-            firebaseKey: j.firebaseKey 
+            firebaseKey: j.firebaseKey,
           })));
-          
+
           if (jokes && jokes.length > 0) {
             setPosts(jokes);
           } else {

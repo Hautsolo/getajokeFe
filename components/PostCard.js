@@ -18,7 +18,7 @@ function PostCard({ postObj, onUpdate }) {
   useEffect(() => {
     console.log('PostCard mounted with postObj:', postObj);
     console.log('Post UID:', postObj.uid, 'Current user UID:', user?.uid);
-    
+
     // Fetch author details if we have a UID and haven't fetched yet
     if (postObj.uid && !jokeAuthor) {
       console.log('Fetching author for UID:', postObj.uid);
@@ -32,7 +32,7 @@ function PostCard({ postObj, onUpdate }) {
           setJokeAuthor(null);
         });
     }
-    
+
     // Check if current user has already upvoted this joke
     if (user?.uid && postObj.upvoters) {
       setHasUpvoted(postObj.upvoters.includes(user.uid));
@@ -82,7 +82,7 @@ function PostCard({ postObj, onUpdate }) {
       showInfoModal('Sign In Required', 'Please sign in to upvote jokes!', 'warning');
       return;
     }
-    
+
     if (hasUpvoted) {
       showInfoModal('Already Upvoted', 'You have already upvoted this joke!', 'info');
       return;
@@ -130,7 +130,7 @@ function PostCard({ postObj, onUpdate }) {
 
   const getAuthorName = () => {
     console.log('Getting author name. jokeAuthor:', jokeAuthor, 'postObj.authorName:', postObj.authorName);
-    
+
     // Try different sources for the author name
     if (jokeAuthor?.displayName) return jokeAuthor.displayName;
     if (jokeAuthor?.email) return jokeAuthor.email.split('@')[0];
@@ -140,7 +140,7 @@ function PostCard({ postObj, onUpdate }) {
     if (postObj.uid && user?.uid && postObj.uid === user.uid) {
       return user.displayName || (user.email ? user.email.split('@')[0] : 'Unknown User');
     }
-    
+
     return 'Unknown User';
   };
 
@@ -158,11 +158,11 @@ function PostCard({ postObj, onUpdate }) {
           <Card.Text style={{ fontSize: '18px', minHeight: '100px', whiteSpace: 'pre-wrap' }}>
             {postObj.content}
           </Card.Text>
-          
+
           <div className="post-meta" style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
             <div>
               <strong>Posted by:</strong>{' '}
-              <span 
+              <span
                 style={{ color: '#007bff', cursor: 'pointer', textDecoration: 'underline' }}
                 onClick={handleUserClick}
               >

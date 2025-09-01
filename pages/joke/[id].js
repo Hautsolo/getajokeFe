@@ -69,8 +69,8 @@ export default function ViewJoke() {
         {user?.uid === jokeDetails.uid && (
           <Link href={`/joke/edit/${id}`} passHref>
             <span className="postbuttons">
-              <Button 
-                className="post-card-button" 
+              <Button
+                className="post-card-button"
                 style={{ marginBottom: '15px', bottom: '10px' }}
               >
                 Edit Joke
@@ -80,8 +80,8 @@ export default function ViewJoke() {
         )}
         {user?.uid === jokeDetails.uid && (
           <span className="postbuttons">
-            <Button 
-              onClick={deleteThisJoke} 
+            <Button
+              onClick={deleteThisJoke}
               className="post-card-button delete-button"
             >
               Delete Joke
@@ -100,15 +100,15 @@ export default function ViewJoke() {
         {jokeDetails.dateCreated && (
           <p>Created: {new Date(jokeDetails.dateCreated).toLocaleDateString()}</p>
         )}
-        
+
         <div className="commentslist">
           <p>Comments:</p>
           {comments.map((comment) => (
-            <CommentCard 
-              key={comment.firebaseKey || Math.random()} 
-              commentObj={comment} 
+            <CommentCard
+              key={comment.firebaseKey || Math.random()}
+              commentObj={comment}
               jokeFirebaseKey={id}
-              onUpdate={getJokeComments} 
+              onUpdate={getJokeComments}
             />
           ))}
           <Accordion className="commentscontainer">
@@ -117,9 +117,9 @@ export default function ViewJoke() {
                 <h5 style={{ color: 'black' }}>Leave a Comment</h5>
               </Accordion.Header>
               <Accordion.Body>
-                <CommentForm 
-                  jokeFirebaseKey={id} 
-                  onSubmit={getJokeComments} 
+                <CommentForm
+                  jokeFirebaseKey={id}
+                  onSubmit={getJokeComments}
                 />
               </Accordion.Body>
             </Accordion.Item>

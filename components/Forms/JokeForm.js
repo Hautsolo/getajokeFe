@@ -25,7 +25,7 @@ export default function JokeForm({ obj }) {
     console.log('=== JOKE FORM MOUNTED ===');
     console.log('Current user:', user);
     console.log('Joke object:', obj);
-    
+
     const prevTags = [];
     if (obj?.firebaseKey) {
       if (obj.tags && Array.isArray(obj.tags)) {
@@ -90,14 +90,19 @@ export default function JokeForm({ obj }) {
 
     // Create new tags first
     const createdNewTags = [];
-    for (const newTag of newTags) {
+    
+    const createTagPromises = newTags.map(async (newTag) => {
       try {
-        const tagResponse = await createTag({ label: newTag.label });
-        createdNewTags.push(newTag.label); // Store as string for simplicity
+        await createTag({ label: newTag.label });
+        return newTag.label; // Store as string for simplicity
       } catch (error) {
         console.error('Error creating tag:', error);
+        return null;
       }
-    }
+    });
+
+    const results = await Promise.all(createTagPromises);
+    createdNewTags.push(...results.filter(Boolean));
 
     // Combine existing tag labels with new tag labels
     const allTagLabels = [
@@ -145,12 +150,19 @@ export default function JokeForm({ obj }) {
       <h2 className="text-white mt-5">{obj?.firebaseKey ? 'Update' : 'Create'} Joke</h2>
 
       {/* Debug info */}
-      <div style={{ background: '#f8f9fa', padding: '10px', margin: '10px 0', fontSize: '12px', color: 'black' }}>
-        <strong>Debug Info:</strong><br/>
-        User UID: {user?.uid}<br/>
-        User Display Name: {user?.displayName}<br/>
-        User Email: {user?.email}<br/>
-        Is Edit Mode: {obj?.firebaseKey ? 'Yes' : 'No'}<br/>
+      <div style={{
+        background: '#f8f9fa',
+        padding: '10px',
+        margin: '10px 0',
+        fontSize: '12px',
+        color: 'black',
+      }}
+      >
+        <strong>Debug Info:</strong><br />
+        User UID: {user?.uid}<br />
+        User Display Name: {user?.displayName}<br />
+        User Email: {user?.email}<br />
+        Is Edit Mode: {obj?.firebaseKey ? 'Yes' : 'No'}<br />
         Firebase Key: {obj?.firebaseKey || 'N/A'}
       </div>
 
@@ -189,7 +201,7 @@ export default function JokeForm({ obj }) {
         onChange={handleTagChange}
         options={
           tags.map((tag) => ({
-            value: tag.firebaseKey || tag.label, 
+            value: tag.firebaseKey || tag.label,
             label: tag.label,
           }))
         }
@@ -209,7 +221,7 @@ JokeForm.propTypes = {
     content: PropTypes.string,
     uid: PropTypes.string,
     upvotes: PropTypes.number,
-    tags: PropTypes.array,
+    tags: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])),
     dateCreated: PropTypes.string,
   }),
 };

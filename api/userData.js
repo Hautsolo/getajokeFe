@@ -150,10 +150,10 @@ const getUsers = () => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-export { 
-  getSingleUser, 
-  getUserByUid, 
-  createUser, 
-  updateUserProfile, 
-  getUsers 
+export {
+  getSingleUser,
+  getUserByUid,
+  createUser,
+  updateUserProfile,
+  getUsers
 };

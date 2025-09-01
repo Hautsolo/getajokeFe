@@ -73,11 +73,11 @@ function RegisterForm({ obj, user, updateUser, isEditMode = false }) {
           ...formData,
           firebaseKey: obj?.firebaseKey || formData.firebaseKey
         };
-        
+
         if (!updateData.firebaseKey) {
           throw new Error('No firebaseKey found for user update');
         }
-        
+
         await updateUserProfile(updateData);
         showInfoModal('Success', 'Profile updated successfully!', 'success', () => {
           if (updateUser) updateUser();
@@ -149,17 +149,17 @@ function RegisterForm({ obj, user, updateUser, isEditMode = false }) {
           </Form.Group>
 
           <div className="d-flex gap-2">
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               type="submit"
               disabled={isLoading}
             >
               {isLoading ? 'Saving...' : (isEditMode ? 'Update Profile' : 'Create Profile')}
             </Button>
-            
+
             {isEditMode && (
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 onClick={() => router.push('/profile/profile')}
                 disabled={isLoading}
               >

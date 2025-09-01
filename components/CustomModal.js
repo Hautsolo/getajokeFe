@@ -39,9 +39,9 @@ const CustomModal = ({
   };
 
   return (
-    <Modal 
-      show={show} 
-      onHide={onHide} 
+    <Modal
+      show={show}
+      onHide={onHide}
       centered
       backdrop="static"
       keyboard={false}
@@ -52,21 +52,21 @@ const CustomModal = ({
           {title}
         </Modal.Title>
       </Modal.Header>
-      
+
       <Modal.Body style={{ padding: '20px', textAlign: 'center' }}>
         <Alert variant={getVariant()} style={{ border: 'none', fontSize: '16px' }}>
           {message}
         </Alert>
       </Modal.Body>
-      
+
       <Modal.Footer style={{ backgroundColor: '#f8f9fa', borderTop: '2px solid #dee2e6', justifyContent: 'center' }}>
         {showCancel && (
           <Button variant="secondary" onClick={onHide} style={{ minWidth: '100px' }}>
             {cancelText}
           </Button>
         )}
-        <Button 
-          variant={type === 'danger' ? 'danger' : 'primary'} 
+        <Button
+          variant={type === 'danger' ? 'danger' : 'primary'}
           onClick={handleConfirm}
           style={{ minWidth: '100px' }}
         >
@@ -99,4 +99,4 @@ CustomModal.defaultProps = {
   showCancel: false,
 };
 
-export default CustomModal; 
+export default CustomModal;

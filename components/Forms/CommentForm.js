@@ -39,7 +39,7 @@ export default function CommentForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (obj?.firebaseKey) {
       // Updating existing comment
       const updatedComment = {
@@ -57,7 +57,7 @@ export default function CommentForm({
         authorName: user.displayName || user.email || 'Unknown User',
         dateCreated: new Date().toISOString(),
       };
-      
+
       createComment(jokeFirebaseKey, payload).then(() => {
         setFormInput({
           ...initialState,
@@ -72,15 +72,15 @@ export default function CommentForm({
   return (
     <Form
       style={{
-        width: '400px', 
+        width: '400px',
         display: 'flex',
       }}
       onSubmit={handleSubmit}
     >
       {/* CONTENT TEXTAREA */}
-      <FloatingLabel 
-        controlId="floatingTextarea" 
-        label={obj?.firebaseKey ? 'Update your comment' : 'Enter your comment'} 
+      <FloatingLabel
+        controlId="floatingTextarea"
+        label={obj?.firebaseKey ? 'Update your comment' : 'Enter your comment'}
         className="mb-3"
       >
         <Form.Control
@@ -94,8 +94,8 @@ export default function CommentForm({
         />
 
         {/* SUBMIT BUTTON */}
-        <Button 
-          style={{ marginTop: '10px' }} 
+        <Button
+          style={{ marginTop: '10px' }}
           type="submit"
         >
           {obj?.firebaseKey ? 'Update' : 'Add'} Comment

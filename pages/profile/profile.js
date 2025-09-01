@@ -34,17 +34,17 @@ export default function Profile() {
       console.log('User UID:', user.uid);
       console.log('User display name:', user.displayName);
       console.log('User email:', user.email);
-      
+
       getJokesForSingleUser(user.uid)
         .then((jokes) => {
           console.log('=== JOKES RESPONSE ===', jokes?.length);
-          console.log('Found jokes:', jokes?.map(j => ({ 
-            title: j.title, 
-            uid: j.uid, 
+          console.log('Found jokes:', jokes?.map((j) => ({
+            title: j.title,
+            uid: j.uid,
             authorName: j.authorName,
-            firebaseKey: j.firebaseKey 
+            firebaseKey: j.firebaseKey,
           })));
-          
+
           if (jokes && jokes.length > 0) {
             setPosts(jokes);
           } else {
@@ -73,7 +73,7 @@ export default function Profile() {
               displayName: user.displayName || user.email?.split('@')[0] || 'User',
               email: user.email,
               photoURL: user.photoURL,
-              bio: ''
+              bio: '',
             };
             setUserDetails(fallbackUser);
           }
