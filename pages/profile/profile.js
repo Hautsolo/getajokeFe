@@ -1,5 +1,5 @@
 import { Button, Card } from 'react-bootstrap';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../utils/context/authContext';
 import PostCard from '../../components/PostCard';
@@ -12,8 +12,8 @@ export default function Profile() {
   const [userDetails, setUserDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fallbackFetchByAuthorName = () => {
-    if (!user) return;
+  const fallbackFetchByAuthorName = useCallback(() => {
+    if (!user) return Promise.resolve();
     const fallbackNames = [
       user.displayName,
       user.email ? user.email.split('@')[0] : null,
@@ -21,47 +21,26 @@ export default function Profile() {
 
     return getJokes().then((all) => {
       const byAuthor = all.filter((j) => fallbackNames.includes(j.authorName));
-      console.log('=== FALLBACK BY AUTHOR NAME ===');
-      console.log('Author names used:', fallbackNames);
-      console.log('Found jokes:', byAuthor.length);
       setPosts(byAuthor);
     });
-  };
+  }, [user]);
 
-  const getUserPosts = () => {
+  const getUserPosts = useCallback(() => {
     if (user?.uid) {
-      console.log('=== FETCHING USER POSTS ===');
-      console.log('User UID:', user.uid);
-      console.log('User display name:', user.displayName);
-      console.log('User email:', user.email);
-
       getJokesForSingleUser(user.uid)
         .then((jokes) => {
-          console.log('=== JOKES RESPONSE ===', jokes?.length);
-          console.log('Found jokes:', jokes?.map((j) => ({
-            title: j.title,
-            uid: j.uid,
-            authorName: j.authorName,
-            firebaseKey: j.firebaseKey,
-          })));
-
           if (jokes && jokes.length > 0) {
             setPosts(jokes);
           } else {
-            console.log('No jokes found by UID, trying fallback by authorName');
-            // Fallback by authorName if no UID match
             return fallbackFetchByAuthorName();
           }
           return null;
         })
-        .catch((error) => {
-          console.error('=== ERROR FETCHING POSTS ===', error);
-          return fallbackFetchByAuthorName();
-        });
+        .catch(() => fallbackFetchByAuthorName());
     }
-  };
+  }, [user, fallbackFetchByAuthorName]);
 
-  const getTheUser = () => {
+  const getTheUser = useCallback(() => {
     if (user?.uid) {
       getUserByUid(user.uid)
         .then((theUser) => {
@@ -80,7 +59,7 @@ export default function Profile() {
         })
         .finally(() => setIsLoading(false));
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user?.uid) {
@@ -89,7 +68,7 @@ export default function Profile() {
     } else {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, getTheUser, getUserPosts]);
 
   const getDisplayName = () => userDetails?.displayName || user?.displayName || userDetails?.email?.split('@')[0] || user?.email?.split('@')[0] || 'Unknown User';
 
@@ -118,7 +97,7 @@ export default function Profile() {
       <div className="d-flex flex-wrap" style={{ width: '100%', gap: '20px' }}>
         {posts.length === 0 ? (
           <div className="text-center w-100">
-            <p>You haven't posted any jokes yet...</p>
+            <p>You haven&apos;t posted any jokes yet...</p>
             <Link href="/joke/edit/new" passHref>
               <Button variant="primary">Create Your First Joke</Button>
             </Link>

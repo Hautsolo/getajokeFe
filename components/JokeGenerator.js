@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Button, Form, Card, Spinner } from 'react-bootstrap';
-import CreatableSelect from 'react-select/creatable';
+import {
+  Button, Form, Card, Spinner, Badge,
+} from 'react-bootstrap';
 import { useAuth } from '../utils/context/authContext';
 import { createJoke } from '../api/jokeData';
 import { createTag } from '../api/tagData';
@@ -10,31 +11,20 @@ export default function JokeGenerator() {
   const { user } = useAuth();
   const [generatedJoke, setGeneratedJoke] = useState('');
   const [jokeTitle, setJokeTitle] = useState('');
-  const [jokeCategory, setJokeCategory] = useState('Any');
-  const [jokeType, setJokeType] = useState('any');
-  const [jokeFlags, setJokeFlags] = useState([]);
+  const [jokeCategory, setJokeCategory] = useState('general');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
+  const [jokeSource, setJokeSource] = useState('');
 
   const jokeCategories = [
-    'Any', 'Misc', 'Programming', 'Dark', 'Pun', 'Spooky', 'Christmas'
-  ];
-
-  const jokeTypes = [
-    { value: 'any', label: 'Any Type' },
-    { value: 'single', label: 'Single (One-liner)' },
-    { value: 'twopart', label: 'Two-part (Setup & Delivery)' }
-  ];
-
-  const availableFlags = [
-    { value: 'nsfw', label: 'NSFW' },
-    { value: 'religious', label: 'Religious' },
-    { value: 'political', label: 'Political' },
-    { value: 'racist', label: 'Racist' },
-    { value: 'sexist', label: 'Sexist' },
-    { value: 'explicit', label: 'Explicit' }
+    { value: 'general', label: '😄 General', description: 'Clean, family-friendly jokes' },
+    { value: 'programming', label: '💻 Programming', description: 'Tech and coding humor' },
+    { value: 'pun', label: '🎭 Puns', description: 'Wordplay and puns' },
+    { value: 'dad', label: '👨 Dad Jokes', description: 'Classic dad humor' },
+    { value: 'knock-knock', label: '🚪 Knock Knock', description: 'Traditional knock-knock jokes' },
+    { value: 'one-liner', label: '⚡ One-liners', description: 'Quick witty jokes' },
   ];
 
   const showInfoModal = (title, message, type = 'info') => {
@@ -51,90 +41,135 @@ export default function JokeGenerator() {
     setIsLoading(true);
     setError('');
     setGeneratedJoke('');
+    setJokeSource('');
 
     try {
-      // Build API URL
-      let url = 'https://v2.jokeapi.dev/joke/';
-
-      // Add category
-      url += jokeCategory === 'Any' ? 'Any' : jokeCategory;
-
-      // Add parameters
-      const params = [];
-
-      // Add type filter
-      if (jokeType !== 'any') {
-        params.push(`type=${jokeType}`);
-      }
-
-      // Add content filtering
-      if (jokeFlags.length > 0) {
-        const allFlags = ['nsfw', 'religious', 'political', 'racist', 'sexist', 'explicit'];
-        const flagsToBlacklist = allFlags.filter(flag => !jokeFlags.includes(flag));
-        if (flagsToBlacklist.length > 0) {
-          params.push(`blacklistFlags=${flagsToBlacklist.join(',')}`);
-        }
-      } else {
-        // If no flags selected, use safe mode
-        params.push('safe-mode');
-      }
-
-      if (params.length > 0) {
-        url += '?' + params.join('&');
-      }
-
-      console.log('Fetching joke from:', url);
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.error) {
-        throw new Error(data.message || 'Failed to fetch joke');
-      }
-
-      // Handle different joke types
       let jokeContent = '';
       let autoTitle = '';
+      let source = '';
 
-      if (data.type === 'single') {
+      // Use different APIs based on category for better, cleaner jokes
+      if (jokeCategory === 'dad') {
+        // Dad jokes API
+        const response = await fetch('https://icanhazdadjoke.com/', {
+          headers: {
+            Accept: 'application/json',
+            'User-Agent': 'Joke Generator App',
+          },
+        });
+
+        if (!response.ok) throw new Error('Dad joke API failed');
+
+        const data = await response.json();
         jokeContent = data.joke;
-        autoTitle = `${data.category} Joke`;
-      } else if (data.type === 'twopart') {
-        jokeContent = `${data.setup}\n\n${data.delivery}`;
-        autoTitle = `${data.category} Two-Part Joke`;
+        autoTitle = '👨 Dad Joke';
+        source = 'icanhazdadjoke.com';
+      } else if (jokeCategory === 'programming') {
+        // Programming jokes from JokeAPI (safe mode only)
+        const response = await fetch('https://v2.jokeapi.dev/joke/Programming?safe-mode');
+
+        if (!response.ok) throw new Error('Programming joke API failed');
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.message);
+
+        if (data.type === 'single') {
+          jokeContent = data.joke;
+        } else {
+          jokeContent = `${data.setup}\n\n${data.delivery}`;
+        }
+        autoTitle = '💻 Programming Joke';
+        source = 'jokeapi.dev';
+      } else if (jokeCategory === 'pun') {
+        // Pun jokes from JokeAPI (safe mode only)
+        const response = await fetch('https://v2.jokeapi.dev/joke/Pun?safe-mode');
+
+        if (!response.ok) throw new Error('Pun joke API failed');
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.message);
+
+        if (data.type === 'single') {
+          jokeContent = data.joke;
+        } else {
+          jokeContent = `${data.setup}\n\n${data.delivery}`;
+        }
+        autoTitle = '🎭 Pun Joke';
+        source = 'jokeapi.dev';
+      } else if (jokeCategory === 'knock-knock') {
+        // Curated knock-knock jokes
+        const knockKnockJokes = [
+          'Knock knock!\nWho\'s there?\nInterrupting cow.\nInterrupting cow w—\nMOO!',
+          'Knock knock!\nWho\'s there?\nBoo.\nBoo who?\nDon\'t cry, it\'s just a joke!',
+          'Knock knock!\nWho\'s there?\nLettuce.\nLettuce who?\nLettuce in, it\'s cold out here!',
+          'Knock knock!\nWho\'s there?\nOrange.\nOrange who?\nOrange you glad I didn\'t say banana?',
+          'Knock knock!\nWho\'s there?\nTank.\nTank who?\nYou\'re welcome!',
+          'Knock knock!\nWho\'s there?\nCanoe.\nCanoe who?\nCanoe help me with my homework?',
+          'Knock knock!\nWho\'s there?\nDonut.\nDonut who?\nDonut ask me that question!',
+          'Knock knock!\nWho\'s there?\nCows go.\nCows go who?\nNo, cows go moo!',
+          'Knock knock!\nWho\'s there?\nHatch.\nHatch who?\nBless you!',
+          'Knock knock!\nWho\'s there?\nWho.\nWho who?\nAre you an owl?',
+        ];
+
+        jokeContent = knockKnockJokes[Math.floor(Math.random() * knockKnockJokes.length)];
+        autoTitle = '🚪 Knock Knock Joke';
+        source = 'curated collection';
+      } else if (jokeCategory === 'one-liner') {
+        // One-liner jokes
+        const oneLinerJokes = [
+          'I told my wife she was drawing her eyebrows too high. She looked surprised.',
+          'I\'m reading a book about anti-gravity. It\'s impossible to put down!',
+          'Did you hear about the mathematician who\'s afraid of negative numbers? He\'ll stop at nothing to avoid them.',
+          'I used to hate facial hair, but then it grew on me.',
+          'Why don\'t scientists trust atoms? Because they make up everything!',
+          'I\'m terrified of elevators, so I\'m going to start taking steps to avoid them.',
+          'What do you call a fake noodle? An impasta!',
+          'I only know 25 letters of the alphabet. I don\'t know y.',
+          'What\'s the best thing about Switzerland? I don\'t know, but the flag is a big plus.',
+          'I invented a new word: Plagiarism!',
+          'Why did the scarecrow win an award? He was outstanding in his field!',
+          'Parallel lines have so much in common. It\'s a shame they\'ll never meet.',
+        ];
+
+        jokeContent = oneLinerJokes[Math.floor(Math.random() * oneLinerJokes.length)];
+        autoTitle = '⚡ One-liner Joke';
+        source = 'curated collection';
       } else {
-        throw new Error('Unknown joke format received');
+        // General clean jokes from JokeAPI (safe mode only)
+        const response = await fetch('https://v2.jokeapi.dev/joke/Misc?safe-mode');
+
+        if (!response.ok) throw new Error('General joke API failed');
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.message);
+
+        if (data.type === 'single') {
+          jokeContent = data.joke;
+        } else {
+          jokeContent = `${data.setup}\n\n${data.delivery}`;
+        }
+        autoTitle = '😄 General Joke';
+        source = 'jokeapi.dev';
       }
 
       setGeneratedJoke(jokeContent);
       setJokeTitle(autoTitle);
-
-    } catch (error) {
-      console.error('Error generating joke:', error);
-      setError(error.message || 'Failed to generate joke. Please try again.');
+      setJokeSource(source);
+    } catch (err) {
+      console.error('Error generating joke:', err);
+      setError(err.message || 'Failed to generate joke. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handlePostJoke = async () => {
-    console.log('=== JOKE GENERATOR POST ===');
-    console.log('Current user:', user);
-    console.log('User UID:', user?.uid);
-    console.log('Generated joke:', generatedJoke);
-
     if (!generatedJoke.trim()) {
       showInfoModal('No Joke Selected', 'Please generate a joke first before posting!', 'warning');
       return;
     }
 
     if (!user?.uid) {
-      console.error('=== NO USER UID IN GENERATOR ===');
       showInfoModal('Sign In Required', 'Please sign in to post jokes!', 'warning');
       return;
     }
@@ -142,16 +177,13 @@ export default function JokeGenerator() {
     setIsLoading(true);
 
     try {
-      // Create any new tags first
-      const createdTags = [];
-      for (const flag of jokeFlags) {
-        try {
-          await createTag({ label: flag });
-          createdTags.push(flag);
-        } catch (error) {
-          console.log(`Tag ${flag} might already exist:`, error);
-          createdTags.push(flag); // Add anyway
-        }
+      // Create category tag
+      const categoryLabel = jokeCategories.find((cat) => cat.value === jokeCategory)?.label || jokeCategory;
+
+      try {
+        await createTag({ label: categoryLabel });
+      } catch (err) {
+        // Tag might already exist, that's fine
       }
 
       const payload = {
@@ -159,166 +191,150 @@ export default function JokeGenerator() {
         content: generatedJoke,
         uid: user.uid,
         authorName: user.displayName || user.email || 'Unknown User',
-        tags: [...createdTags, jokeCategory !== 'Any' ? jokeCategory : ''].filter(Boolean),
+        tags: [categoryLabel],
         upvotes: 0,
         upvoters: [],
         dateCreated: new Date().toISOString(),
       };
 
-      console.log('=== GENERATOR JOKE PAYLOAD ===');
-      console.log('Final payload:', payload);
-      console.log('UID being set:', payload.uid);
-      console.log('Author name being set:', payload.authorName);
-
-      const result = await createJoke(payload);
-      console.log('=== GENERATOR JOKE CREATED ===');
-      console.log('Create result:', result);
-
+      await createJoke(payload);
       showInfoModal('Success', '🎉 Joke posted successfully to your collection!', 'success');
 
       // Reset form
       setGeneratedJoke('');
       setJokeTitle('');
-      setJokeCategory('Any');
-      setJokeType('any');
-      setJokeFlags([]);
-
-    } catch (error) {
-      console.error('=== ERROR POSTING GENERATOR JOKE ===');
-      console.error('Error details:', error);
-      showInfoModal('Error', `Failed to post joke: ${error.message}`, 'danger');
+      setJokeCategory('general');
+      setJokeSource('');
+    } catch (err) {
+      console.error('Error posting joke:', err);
+      showInfoModal('Error', `Failed to post joke: ${err.message}`, 'danger');
     } finally {
       setIsLoading(false);
     }
   };
 
-  console.log('=== JOKE GENERATOR RENDER ===');
-  console.log('Current user:', user);
-  console.log('User UID:', user?.uid);
-
   return (
     <>
       <div className="container mt-4">
-        <h2 className="text-center mb-4">🎭 Joke Generator</h2>
-
-        {/* Debug info */}
-        <div style={{ background: '#f8f9fa', padding: '10px', margin: '10px 0', fontSize: '12px', color: 'black' }}>
-          <strong>Debug Info:</strong><br/>
-          User UID: {user?.uid}<br/>
-          User Display Name: {user?.displayName}<br/>
-          User Email: {user?.email}<br/>
-          User Signed In: {user ? 'Yes' : 'No'}<br/>
-        </div>
+        <h2 className="text-center mb-4">🎭 Clean Joke Generator</h2>
+        <p className="text-center text-muted mb-4">
+          Generate family-friendly, clean jokes from various categories
+        </p>
 
         <Card className="mb-4">
           <Card.Body>
-            <h5>Customize Your Joke</h5>
+            <h5 className="mb-4">Choose Your Joke Style</h5>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Category</Form.Label>
+            <Form.Group className="mb-4">
+              <Form.Label className="fw-bold">Category</Form.Label>
               <Form.Select
                 value={jokeCategory}
                 onChange={(e) => setJokeCategory(e.target.value)}
                 style={{ color: 'black' }}
+                className="mb-2"
               >
-                {jokeCategories.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                {jokeCategories.map((category) => (
+                  <option key={category.value} value={category.value}>
+                    {category.label}
+                  </option>
                 ))}
               </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Joke Type</Form.Label>
-              <Form.Select
-                value={jokeType}
-                onChange={(e) => setJokeType(e.target.value)}
-                style={{ color: 'black' }}
-              >
-                {jokeTypes.map(type => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Content Flags (Include these types)</Form.Label>
-              <CreatableSelect
-                isMulti
-                value={jokeFlags.map(flag => ({ value: flag, label: flag }))}
-                options={availableFlags}
-                onChange={(selected) => setJokeFlags(selected.map(item => item.value))}
-                placeholder="Select content types to include..."
-                className="text-dark"
-              />
               <Form.Text className="text-muted">
-                Select content types you want to include. Leave empty for safe content only.
+                {jokeCategories.find((cat) => cat.value === jokeCategory)?.description}
               </Form.Text>
             </Form.Group>
 
-            <Button
-              variant="primary"
-              onClick={generateJoke}
-              disabled={isLoading}
-              className="w-100"
-            >
-              {isLoading ? (
-                <>
-                  <Spinner animation="border" size="sm" className="me-2" />
-                  Generating...
-                </>
-              ) : (
-                '🎲 Generate Joke'
-              )}
-            </Button>
+            <div className="d-grid">
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={generateJoke}
+                disabled={isLoading}
+                className="py-3"
+              >
+                {isLoading ? (
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    Generating your joke...
+                  </>
+                ) : (
+                  '🎲 Generate Clean Joke'
+                )}
+              </Button>
+            </div>
           </Card.Body>
         </Card>
 
         {error && (
-          <div className="alert alert-danger">
-            <strong>Error:</strong> {error}
+          <div className="alert alert-danger mb-4">
+            <strong>Oops!</strong>
+            {' '}
+            {error}
           </div>
         )}
 
         {generatedJoke && (
-          <Card className="mb-4">
+          <Card className="mb-4 shadow-sm">
             <Card.Body>
-              <h5>Generated Joke</h5>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h5 className="mb-0">🎉 Your Generated Joke</h5>
+                {jokeSource && (
+                  <Badge bg="secondary" className="ms-2">
+                    Source:
+                    {' '}
+                    {jokeSource}
+                  </Badge>
+                )}
+              </div>
+
               <Form.Group className="mb-3">
-                <Form.Label>Title</Form.Label>
+                <Form.Label className="fw-bold">Title</Form.Label>
                 <Form.Control
                   type="text"
                   value={jokeTitle}
                   onChange={(e) => setJokeTitle(e.target.value)}
-                  placeholder="Enter a title for your joke"
+                  placeholder="Give your joke a title"
                   style={{ color: 'black' }}
                 />
               </Form.Group>
 
-              <Card.Text
-                style={{
-                  fontSize: '18px',
-                  whiteSpace: 'pre-wrap',
-                  backgroundColor: '#f8f9fa',
-                  padding: '15px',
-                  borderRadius: '5px',
-                  border: '1px solid #dee2e6'
-                }}
-              >
-                {generatedJoke}
-              </Card.Text>
+              <Card className="mb-4">
+                <Card.Body
+                  style={{
+                    fontSize: '18px',
+                    lineHeight: '1.6',
+                    whiteSpace: 'pre-wrap',
+                    backgroundColor: '#f8f9fa',
+                    minHeight: '100px',
+                  }}
+                >
+                  {generatedJoke}
+                </Card.Body>
+              </Card>
 
-              <div className="d-flex gap-2 justify-content-center">
+              <div className="d-flex gap-3 justify-content-center flex-wrap">
                 <Button
                   variant="success"
+                  size="lg"
                   onClick={handlePostJoke}
                   disabled={isLoading}
+                  className="px-4"
                 >
-                  {isLoading ? 'Posting...' : '📝 Post This Joke'}
+                  {isLoading ? (
+                    <>
+                      <Spinner animation="border" size="sm" className="me-2" />
+                      Posting...
+                    </>
+                  ) : (
+                    '📝 Post Joke'
+                  )}
                 </Button>
                 <Button
-                  variant="secondary"
+                  variant="outline-primary"
+                  size="lg"
                   onClick={generateJoke}
                   disabled={isLoading}
+                  className="px-4"
                 >
                   🔄 Generate Another
                 </Button>

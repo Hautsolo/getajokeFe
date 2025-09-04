@@ -15,14 +15,11 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
   useEffect(() => {
     // Fetch comment author details
     if (commentObj.uid && !commentAuthor) {
-      console.log('Fetching comment author for UID:', commentObj.uid);
       getUserByUid(commentObj.uid)
         .then((authorData) => {
-          console.log('Comment author data:', authorData);
           setCommentAuthor(authorData);
         })
         .catch((error) => {
-          console.error('Error fetching comment author:', error);
         });
     }
   }, [commentObj.uid, commentAuthor]);
@@ -72,7 +69,7 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
             showInfoModal('Error', `Failed to delete comment: ${error.message}`, 'danger');
           });
       },
-      'danger'
+      'danger',
     );
   };
 

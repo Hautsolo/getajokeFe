@@ -110,7 +110,7 @@ function PostCard({ postObj, onUpdate }) {
     if (!dateString) return 'Unknown date';
     try {
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Unknown date';
+      if (Number.isNaN(date.getTime())) return 'Unknown date';
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',

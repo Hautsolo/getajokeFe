@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import { Accordion, Button } from 'react-bootstrap';
@@ -22,7 +22,7 @@ export default function ViewJoke() {
   const [jokeAuthor, setJokeAuthor] = useState(null);
   const { user } = useAuth();
 
-  const getTheJoke = () => {
+  const getTheJoke = useCallback(() => {
     if (id) {
       getSingleJoke(id).then((joke) => {
         setJokeDetails(joke);
@@ -32,20 +32,20 @@ export default function ViewJoke() {
         }
       });
     }
-  };
+  }, [id]);
 
-  const getJokeComments = () => {
+  const getJokeComments = useCallback(() => {
     if (id) {
       getComments(id).then((commentsData) => {
         setComments(commentsData || []);
       });
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     getTheJoke();
     getJokeComments();
-  }, [id]);
+  }, [getTheJoke, getJokeComments]);
 
   const deleteThisJoke = () => {
     if (window.confirm(`Delete "${jokeDetails.title || jokeDetails.content}"?`)) {
@@ -137,7 +137,7 @@ ViewJoke.propTypes = {
     content: PropTypes.string,
     uid: PropTypes.string,
     upvotes: PropTypes.number,
-    tags: PropTypes.array,
+    tags: PropTypes.arrayOf(PropTypes.string),
     dateCreated: PropTypes.string,
   }),
 };

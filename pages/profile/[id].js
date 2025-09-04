@@ -46,21 +46,12 @@ export default function UserProfile() {
 
   const getUserPosts = () => {
     if (id) {
-      console.log('=== FETCHING POSTS FOR USER ID ===', id);
       getJokesForSingleUser(id)
         .then((jokes) => {
-          console.log('=== JOKES FOR USER ===', jokes?.length);
-          console.log('Found jokes:', jokes?.map((j) => ({
-            title: j.title,
-            uid: j.uid,
-            authorName: j.authorName,
-            firebaseKey: j.firebaseKey,
-          })));
 
           if (jokes && jokes.length > 0) {
             setPosts(jokes);
           } else {
-            console.log('No jokes found by UID, trying full fetch + filter');
             // fallback using all jokes
             return getJokes().then((all) => {
               const filtered = all.filter((j) => j.uid === id);
@@ -98,7 +89,7 @@ export default function UserProfile() {
     return (
       <div className="text-center mt-5">
         <h3>User Not Found</h3>
-        <p>The profile you're looking for doesn't exist.</p>
+        <p>The profile you&apos;re looking for doesn&apos;t exist.</p>
         <Link href="/" passHref>
           <Button variant="primary">Go Home</Button>
         </Link>
