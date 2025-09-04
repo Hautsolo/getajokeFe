@@ -19,7 +19,7 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
         .then((authorData) => {
           setCommentAuthor(authorData);
         })
-        .catch((error) => {
+        .catch(() => {
         });
     }
   }, [commentObj.uid, commentAuthor]);
