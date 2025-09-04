@@ -47,7 +47,6 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
   };
 
   const deleteThisComment = () => {
-    console.log('Attempting to delete comment:', commentObj.firebaseKey, 'from joke:', jokeFirebaseKey);
 
     if (!commentObj.firebaseKey) {
       showInfoModal('Error', 'Cannot delete comment: Missing comment ID', 'danger');
@@ -60,12 +59,10 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
       () => {
         deleteComment(jokeFirebaseKey, commentObj.firebaseKey)
           .then(() => {
-            console.log('Comment deleted successfully');
             showInfoModal('Success', 'Comment deleted successfully!', 'success');
             onUpdate(); // Refresh the comments
           })
           .catch((error) => {
-            console.error('Error deleting comment:', error);
             showInfoModal('Error', `Failed to delete comment: ${error.message}`, 'danger');
           });
       },

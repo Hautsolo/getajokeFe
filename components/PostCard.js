@@ -16,28 +16,20 @@ function PostCard({ postObj, onUpdate }) {
   const [modalConfig, setModalConfig] = useState({});
 
   useEffect(() => {
-    console.log('PostCard mounted with postObj:', postObj);
-    console.log('Post UID:', postObj.uid, 'Current user UID:', user?.uid);
-
-    // Fetch author details if we have a UID and haven't fetched yet
     if (postObj.uid && !jokeAuthor) {
-      console.log('Fetching author for UID:', postObj.uid);
       getUserByUid(postObj.uid)
         .then((authorData) => {
-          console.log('Author data fetched:', authorData);
           setJokeAuthor(authorData);
         })
-        .catch((error) => {
-          console.error('Error fetching author:', error);
+        .catch(() => {
           setJokeAuthor(null);
         });
     }
 
-    // Check if current user has already upvoted this joke
     if (user?.uid && postObj.upvoters) {
       setHasUpvoted(postObj.upvoters.includes(user.uid));
     }
-  }, [postObj.uid, postObj.upvoters, jokeAuthor, user]);
+  }, [postObj, jokeAuthor, user]);
 
   const showConfirmModal = (title, message, onConfirm, type = 'confirm') => {
     setModalConfig({
@@ -89,14 +81,12 @@ function PostCard({ postObj, onUpdate }) {
     }
 
     upvoteJoke(postObj.firebaseKey, user.uid)
-      .then((result) => {
-        console.log('Upvote successful:', result);
+      .then(() => {
         setHasUpvoted(true);
         showInfoModal('Success', 'Joke upvoted successfully! 🎉', 'success');
-        onUpdate(); // Refresh the joke data
+        onUpdate();
       })
       .catch((error) => {
-        console.error('Upvote failed:', error);
         if (error.message.includes('already upvoted')) {
           setHasUpvoted(true);
           showInfoModal('Already Upvoted', 'You have already upvoted this joke!', 'info');
@@ -129,14 +119,10 @@ function PostCard({ postObj, onUpdate }) {
   };
 
   const getAuthorName = () => {
-    console.log('Getting author name. jokeAuthor:', jokeAuthor, 'postObj.authorName:', postObj.authorName);
-
-    // Try different sources for the author name
     if (jokeAuthor?.displayName) return jokeAuthor.displayName;
     if (jokeAuthor?.email) return jokeAuthor.email.split('@')[0];
     if (postObj.authorName) return postObj.authorName;
     if (postObj.author) return postObj.author;
-    // Fallback to current user if this is their post
     if (postObj.uid && user?.uid && postObj.uid === user.uid) {
       return user.displayName || (user.email ? user.email.split('@')[0] : 'Unknown User');
     }
@@ -165,6 +151,9 @@ function PostCard({ postObj, onUpdate }) {
               <span
                 style={{ color: '#007bff', cursor: 'pointer', textDecoration: 'underline' }}
                 onClick={handleUserClick}
+                onKeyPress={handleUserClick}
+                role="button"
+                tabIndex={0}
               >
                 {getAuthorName()}
               </span>
@@ -232,9 +221,9 @@ PostCard.propTypes = {
     authorName: PropTypes.string,
     author: PropTypes.string,
     dateCreated: PropTypes.string,
-    tags: PropTypes.array,
+    tags: PropTypes.arrayOf(PropTypes.string),
     upvotes: PropTypes.number,
-    upvoters: PropTypes.array,
+    upvoters: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
   onUpdate: PropTypes.func.isRequired,
 };

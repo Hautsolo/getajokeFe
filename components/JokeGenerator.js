@@ -156,7 +156,6 @@ export default function JokeGenerator() {
       setJokeTitle(autoTitle);
       setJokeSource(source);
     } catch (err) {
-      console.error('Error generating joke:', err);
       setError(err.message || 'Failed to generate joke. Please try again.');
     } finally {
       setIsLoading(false);
@@ -206,7 +205,6 @@ export default function JokeGenerator() {
       setJokeCategory('general');
       setJokeSource('');
     } catch (err) {
-      console.error('Error posting joke:', err);
       showInfoModal('Error', `Failed to post joke: ${err.message}`, 'danger');
     } finally {
       setIsLoading(false);
