@@ -15,7 +15,6 @@ function RegisterForm({ obj, user, updateUser, isEditMode = false }) {
 
   useEffect(() => {
     if (user && !obj?.firebaseKey && !isEditMode) {
-      // New user registration
       setFormData({
         uid: user.uid,
         displayName: user.displayName || '',
@@ -23,7 +22,6 @@ function RegisterForm({ obj, user, updateUser, isEditMode = false }) {
         bio: '',
       });
     } else {
-      // Editing existing user
       setFormData({
         uid: obj?.uid || user?.uid || '',
         displayName: obj?.displayName || user?.displayName || '',
@@ -59,7 +57,6 @@ function RegisterForm({ obj, user, updateUser, isEditMode = false }) {
 
     try {
       if (!obj?.firebaseKey && !isEditMode) {
-        // Creating new user
         console.log('Creating new user:', formData);
         await createUser(formData);
         showInfoModal('Success', 'Profile created successfully!', 'success', () => {
@@ -67,7 +64,6 @@ function RegisterForm({ obj, user, updateUser, isEditMode = false }) {
           router.push('/');
         });
       } else {
-        // Updating existing user
         console.log('Updating user:', formData);
         const updateData = {
           ...formData,

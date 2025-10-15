@@ -17,7 +17,6 @@ export default function TagForm({ obj, tagPostId, onSubmit }) {
   const [tags, setTags] = useState([]);
   const { user } = useAuth();
 
-  // IF WE ARE EDITING A TAG, THIS WILL SET THE FORMINPUT STATE TO THE VALUES OF THE TAG, BUT IF WE ARE CREATING A NEW TAG, IT WILL SET THE POST_ID OF THE INITAL STATE TO THE POST_ID ON WHICH WE ARE TAGING
   useEffect(() => {
     if (obj.id) {
       setFormInput(obj);
@@ -67,7 +66,6 @@ export default function TagForm({ obj, tagPostId, onSubmit }) {
     <Form onSubmit={handleSubmit}>
       <h4 className="text-white mt-5">{obj.id ? 'Update' : 'Add'} Tag</h4>
       <p>{tags}</p>
-      {/* CONTENT TEXTAREA  */}
       <FloatingLabel controlId="floatingTextarea" label="Create a new tag" className="mb-3">
         <Form.Control
           as="textarea"
@@ -79,7 +77,6 @@ export default function TagForm({ obj, tagPostId, onSubmit }) {
           required
         />
 
-        {/* SUBMIT BUTTON  */}
         <Button type="submit">{obj.id ? 'Update' : 'Add'} Tag</Button>
       </FloatingLabel>
 

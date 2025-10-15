@@ -41,7 +41,6 @@ export default function CommentForm({
     e.preventDefault();
 
     if (obj?.firebaseKey) {
-      // Updating existing comment
       const updatedComment = {
         ...formInput,
         firebaseKey: obj.firebaseKey,
@@ -50,7 +49,6 @@ export default function CommentForm({
         onSubmit();
       });
     } else {
-      // Creating new comment
       const payload = {
         content: formInput.content,
         uid: user.uid,
@@ -77,7 +75,6 @@ export default function CommentForm({
       }}
       onSubmit={handleSubmit}
     >
-      {/* CONTENT TEXTAREA */}
       <FloatingLabel
         controlId="floatingTextarea"
         label={obj?.firebaseKey ? 'Update your comment' : 'Enter your comment'}
@@ -93,7 +90,6 @@ export default function CommentForm({
           required
         />
 
-        {/* SUBMIT BUTTON */}
         <Button
           style={{ marginTop: '10px' }}
           type="submit"

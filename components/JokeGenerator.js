@@ -48,9 +48,7 @@ export default function JokeGenerator() {
       let autoTitle = '';
       let source = '';
 
-      // Use different APIs based on category for better, cleaner jokes
       if (jokeCategory === 'dad') {
-        // Dad jokes API
         const response = await fetch('https://icanhazdadjoke.com/', {
           headers: {
             Accept: 'application/json',
@@ -65,7 +63,6 @@ export default function JokeGenerator() {
         autoTitle = '👨 Dad Joke';
         source = 'icanhazdadjoke.com';
       } else if (jokeCategory === 'programming') {
-        // Programming jokes from JokeAPI (safe mode only)
         const response = await fetch('https://v2.jokeapi.dev/joke/Programming?safe-mode');
 
         if (!response.ok) throw new Error('Programming joke API failed');
@@ -81,7 +78,6 @@ export default function JokeGenerator() {
         autoTitle = '💻 Programming Joke';
         source = 'jokeapi.dev';
       } else if (jokeCategory === 'pun') {
-        // Pun jokes from JokeAPI (safe mode only)
         const response = await fetch('https://v2.jokeapi.dev/joke/Pun?safe-mode');
 
         if (!response.ok) throw new Error('Pun joke API failed');
@@ -97,7 +93,6 @@ export default function JokeGenerator() {
         autoTitle = '🎭 Pun Joke';
         source = 'jokeapi.dev';
       } else if (jokeCategory === 'knock-knock') {
-        // Curated knock-knock jokes
         const knockKnockJokes = [
           'Knock knock!\nWho\'s there?\nInterrupting cow.\nInterrupting cow w—\nMOO!',
           'Knock knock!\nWho\'s there?\nBoo.\nBoo who?\nDon\'t cry, it\'s just a joke!',
@@ -115,7 +110,6 @@ export default function JokeGenerator() {
         autoTitle = '🚪 Knock Knock Joke';
         source = 'curated collection';
       } else if (jokeCategory === 'one-liner') {
-        // One-liner jokes
         const oneLinerJokes = [
           'I told my wife she was drawing her eyebrows too high. She looked surprised.',
           'I\'m reading a book about anti-gravity. It\'s impossible to put down!',
@@ -135,7 +129,6 @@ export default function JokeGenerator() {
         autoTitle = '⚡ One-liner Joke';
         source = 'curated collection';
       } else {
-        // General clean jokes from JokeAPI (safe mode only)
         const response = await fetch('https://v2.jokeapi.dev/joke/Misc?safe-mode');
 
         if (!response.ok) throw new Error('General joke API failed');
@@ -176,13 +169,12 @@ export default function JokeGenerator() {
     setIsLoading(true);
 
     try {
-      // Create category tag
       const categoryLabel = jokeCategories.find((cat) => cat.value === jokeCategory)?.label || jokeCategory;
 
       try {
         await createTag({ label: categoryLabel });
       } catch (err) {
-        // Tag might already exist, that's fine
+        // might already exist, that's cool
       }
 
       const payload = {
@@ -199,7 +191,6 @@ export default function JokeGenerator() {
       await createJoke(payload);
       showInfoModal('Success', '🎉 Joke posted successfully to your collection!', 'success');
 
-      // Reset form
       setGeneratedJoke('');
       setJokeTitle('');
       setJokeCategory('general');

@@ -2,7 +2,6 @@ import { clientCredentials } from '../utils/client';
 
 const endpoint = clientCredentials.databaseURL;
 
-// GET ALL JOKES
 const getJokes = () => new Promise((resolve, reject) => {
   fetch(`${endpoint}/jokes.json`, {
     method: 'GET',
@@ -13,10 +12,9 @@ const getJokes = () => new Promise((resolve, reject) => {
     .then((response) => response.json())
     .then((data) => {
       if (data) {
-        // Convert Firebase object to array while preserving keys
         const jokesWithKeys = Object.keys(data).map(key => ({
           ...data[key],
-          firebaseKey: key // Add the Firebase key to each joke
+          firebaseKey: key
         }));
         resolve(jokesWithKeys);
       } else {
@@ -26,7 +24,6 @@ const getJokes = () => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// GET ALL JOKES MADE BY A SINGLE USER
 const getJokesForSingleUser = (uid) => new Promise((resolve, reject) => {
   if (!uid) {
     resolve([]);
@@ -37,7 +34,6 @@ const getJokesForSingleUser = (uid) => new Promise((resolve, reject) => {
   console.log('=== getJokesForSingleUser ===');
   console.log('Searching for UID:', normalized);
 
-  // Try Firebase query first
   fetch(`${endpoint}/jokes.json?orderBy="uid"&equalTo="${normalized}"`, {
     method: 'GET',
     headers: {
@@ -54,7 +50,6 @@ const getJokesForSingleUser = (uid) => new Promise((resolve, reject) => {
     .then((data) => {
       console.log('Firebase query data:', data);
       if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-        // Convert Firebase object to array while preserving keys
         const jokesWithKeys = Object.keys(data).map(key => ({
           ...data[key],
           firebaseKey: key
@@ -63,7 +58,6 @@ const getJokesForSingleUser = (uid) => new Promise((resolve, reject) => {
         resolve(jokesWithKeys);
       } else {
         console.log('Firebase query returned empty, falling back to full fetch');
-        // Fallback: fetch all jokes and filter by UID
         return getJokes().then(allJokes => {
           const userJokes = allJokes.filter(joke => joke.uid === normalized);
           console.log('Fallback fetch found jokes:', userJokes.length);
@@ -73,7 +67,6 @@ const getJokesForSingleUser = (uid) => new Promise((resolve, reject) => {
     })
     .catch((error) => {
       console.log('Firebase query failed, falling back to full fetch:', error.message);
-      // Fallback: fetch all jokes and filter by UID
       getJokes().then(allJokes => {
         const userJokes = allJokes.filter(joke => joke.uid === normalized);
         console.log('Fallback fetch found jokes:', userJokes.length);
@@ -83,7 +76,6 @@ const getJokesForSingleUser = (uid) => new Promise((resolve, reject) => {
     });
 });
 
-// GET A SINGLE JOKE
 const getSingleJoke = (firebaseKey) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/jokes/${firebaseKey}.json`, {
     method: 'GET',
@@ -94,7 +86,6 @@ const getSingleJoke = (firebaseKey) => new Promise((resolve, reject) => {
     .then((response) => response.json())
     .then((data) => {
       if (data) {
-        // Add the firebaseKey to the returned joke
         resolve({ ...data, firebaseKey });
       } else {
         resolve(null);
@@ -103,7 +94,6 @@ const getSingleJoke = (firebaseKey) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// CREATE JOKE
 const createJoke = (payload) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/jokes.json`, {
     method: 'POST',
@@ -121,9 +111,7 @@ const createJoke = (payload) => new Promise((resolve, reject) => {
       return response.json();
     })
     .then((data) => {
-      // Firebase returns { "name": "firebaseKey" }
       const firebaseKey = data.name;
-      // Return the complete joke object with the firebaseKey
       resolve({ ...payload, firebaseKey });
     })
     .catch((error) => {
@@ -132,7 +120,6 @@ const createJoke = (payload) => new Promise((resolve, reject) => {
     });
 });
 
-// UPDATE JOKE
 const updateJoke = (payload) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/jokes/${payload.firebaseKey}.json`, {
     method: 'PATCH',
@@ -151,7 +138,6 @@ const updateJoke = (payload) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// DELETE JOKE
 const deleteJoke = (firebaseKey) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/jokes/${firebaseKey}.json`, {
     method: 'DELETE',
@@ -164,29 +150,23 @@ const deleteJoke = (firebaseKey) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// UPVOTE JOKE
 const upvoteJoke = (firebaseKey, userId) => new Promise((resolve, reject) => {
-  // First, get the current joke data to check existing upvotes
   getSingleJoke(firebaseKey).then((joke) => {
     if (!joke) {
       reject(new Error('Joke not found'));
       return;
     }
 
-    // Initialize upvoters array if it doesn't exist
     const upvoters = joke.upvoters || [];
 
-    // Check if user has already upvoted
     if (upvoters.includes(userId)) {
       reject(new Error('You have already upvoted this joke'));
       return;
     }
 
-    // Add user to upvoters list
     const newUpvoters = [...upvoters, userId];
     const newUpvoteCount = newUpvoters.length;
 
-    // Update the joke with new upvote data
     fetch(`${endpoint}/jokes/${firebaseKey}.json`, {
       method: 'PATCH',
       headers: {
@@ -208,17 +188,14 @@ const upvoteJoke = (firebaseKey, userId) => new Promise((resolve, reject) => {
   }).catch(reject);
 });
 
-// SEARCH JOKES
 const searchJokes = (searchValue) => new Promise((resolve, reject) => {
   getJokes().then((jokes) => {
     const searchTerm = searchValue ? searchValue.toLowerCase() : '';
 
     const filteredJokes = jokes.filter((joke) => {
-      // Ensure joke properties are defined and are strings
       const content = joke.content ? joke.content.toLowerCase() : '';
       const title = joke.title ? joke.title.toLowerCase() : '';
 
-      // Ensure tags are defined and handle the case where tag.label might be undefined
       const tagsMatch = joke.tags && joke.tags.some((tag) => {
         if (typeof tag === 'string') {
           return tag.toLowerCase().includes(searchTerm);

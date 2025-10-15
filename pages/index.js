@@ -35,17 +35,12 @@ function Home() {
     setSortBy(e.target.value);
   };
 
-  // Sort posts based on selected criteria
   const sortedPosts = [...posts].sort((a, b) => {
     if (sortBy === 'date') {
-      const dateA = new Date(a.dateCreated || 0);
-      const dateB = new Date(b.dateCreated || 0);
-      return dateB - dateA; // Sort by date (newest first)
+      return new Date(b.dateCreated || 0) - new Date(a.dateCreated || 0);
     }
     if (sortBy === 'upvotes') {
-      const upvotesA = a.upvotes || 0;
-      const upvotesB = b.upvotes || 0;
-      return upvotesB - upvotesA; // Sort by upvotes (highest first)
+      return (b.upvotes || 0) - (a.upvotes || 0);
     }
     return 0;
   });

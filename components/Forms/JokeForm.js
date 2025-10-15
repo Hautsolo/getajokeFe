@@ -22,19 +22,13 @@ export default function JokeForm({ obj }) {
   const { user } = useAuth();
 
   useEffect(() => {
-    console.log('=== JOKE FORM MOUNTED ===');
-    console.log('Current user:', user);
-    console.log('Joke object:', obj);
-
     const prevTags = [];
     if (obj?.firebaseKey) {
       if (obj.tags && Array.isArray(obj.tags)) {
         obj.tags.forEach((tag) => {
           if (typeof tag === 'string') {
-            // If tags are stored as strings
             prevTags.push({ value: tag, label: tag });
           } else if (tag.firebaseKey) {
-            // If tags are objects with firebaseKey
             prevTags.push({ value: tag.firebaseKey, label: tag.label });
           }
         });
@@ -77,24 +71,17 @@ export default function JokeForm({ obj }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log('=== JOKE FORM SUBMIT ===');
-    console.log('Current user:', user);
-    console.log('User UID:', user?.uid);
-    console.log('Form input:', formInput);
-
     if (!user?.uid) {
-      console.error('=== NO USER UID AVAILABLE ===');
       alert('You must be signed in to create a joke!');
       return;
     }
 
-    // Create new tags first
     const createdNewTags = [];
     
     const createTagPromises = newTags.map(async (newTag) => {
       try {
         await createTag({ label: newTag.label });
-        return newTag.label; // Store as string for simplicity
+        return newTag.label;
       } catch (error) {
         console.error('Error creating tag:', error);
         return null;
@@ -104,7 +91,6 @@ export default function JokeForm({ obj }) {
     const results = await Promise.all(createTagPromises);
     createdNewTags.push(...results.filter(Boolean));
 
-    // Combine existing tag labels with new tag labels
     const allTagLabels = [
       ...selectedTags.map((tag) => tag.label),
       ...createdNewTags,
@@ -120,27 +106,15 @@ export default function JokeForm({ obj }) {
       dateCreated: obj?.dateCreated || new Date().toISOString(),
     };
 
-    console.log('=== JOKE PAYLOAD ===');
-    console.log('Final payload:', payload);
-    console.log('UID being set:', payload.uid);
-    console.log('Author name being set:', payload.authorName);
-
     try {
       if (obj?.firebaseKey) {
         payload.firebaseKey = obj.firebaseKey;
-        console.log('=== UPDATING EXISTING JOKE ===');
-        console.log('Firebase key:', payload.firebaseKey);
         await updateJoke(payload);
       } else {
-        console.log('=== CREATING NEW JOKE ===');
-        const result = await createJoke(payload);
-        console.log('=== JOKE CREATED SUCCESSFULLY ===');
-        console.log('Create result:', result);
+        await createJoke(payload);
       }
       router.push('/');
     } catch (error) {
-      console.error('=== ERROR SAVING JOKE ===');
-      console.error('Error details:', error);
       alert(`Failed to save joke: ${error.message}`);
     }
   };
@@ -149,24 +123,6 @@ export default function JokeForm({ obj }) {
     <Form onSubmit={handleSubmit}>
       <h2 className="text-white mt-5">{obj?.firebaseKey ? 'Update' : 'Create'} Joke</h2>
 
-      {/* Debug info */}
-      <div style={{
-        background: '#f8f9fa',
-        padding: '10px',
-        margin: '10px 0',
-        fontSize: '12px',
-        color: 'black',
-      }}
-      >
-        <strong>Debug Info:</strong><br />
-        User UID: {user?.uid}<br />
-        User Display Name: {user?.displayName}<br />
-        User Email: {user?.email}<br />
-        Is Edit Mode: {obj?.firebaseKey ? 'Yes' : 'No'}<br />
-        Firebase Key: {obj?.firebaseKey || 'N/A'}
-      </div>
-
-      {/* TITLE INPUT */}
       <FloatingLabel controlId="floatingInput1" label="Title" className="mb-3">
         <Form.Control
           type="text"
@@ -178,7 +134,6 @@ export default function JokeForm({ obj }) {
         />
       </FloatingLabel>
 
-      {/* CONTENT TEXTAREA */}
       <FloatingLabel controlId="floatingTextarea" label="Content" className="mb-3">
         <Form.Control
           as="textarea"
@@ -191,7 +146,6 @@ export default function JokeForm({ obj }) {
         />
       </FloatingLabel>
 
-      {/* TAG SELECT */}
       <CreatableSelect
         aria-label="tags"
         name="tags"
@@ -208,7 +162,6 @@ export default function JokeForm({ obj }) {
         placeholder="Select or create tags..."
       />
 
-      {/* SUBMIT BUTTON */}
       <Button type="submit">{obj?.firebaseKey ? 'Update' : 'Create'} Joke</Button>
     </Form>
   );

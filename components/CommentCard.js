@@ -13,7 +13,6 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
   const [modalConfig, setModalConfig] = useState({});
 
   useEffect(() => {
-    // Fetch comment author details
     if (commentObj.uid && !commentAuthor) {
       getUserByUid(commentObj.uid)
         .then((authorData) => {
@@ -88,7 +87,6 @@ export default function CommentCard({ commentObj, jokeFirebaseKey, onUpdate }) {
   };
 
   const getCommentAuthorName = () => {
-    // Try different sources for the author name
     if (commentAuthor?.displayName) return commentAuthor.displayName;
     if (commentAuthor?.email) return commentAuthor.email.split('@')[0];
     if (commentObj.authorName) return commentObj.authorName;

@@ -2,7 +2,6 @@ import { clientCredentials } from '../utils/client';
 
 const endpoint = clientCredentials.databaseURL;
 
-// GET ALL TAGS
 const getTags = () => new Promise((resolve, reject) => {
   fetch(`${endpoint}/tags.json`, {
     method: 'GET',
@@ -21,7 +20,6 @@ const getTags = () => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// GET SINGLE TAG
 const getSingleTag = (firebaseKey) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/tags/${firebaseKey}.json`, {
     method: 'GET',
@@ -34,7 +32,6 @@ const getSingleTag = (firebaseKey) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// CREATE TAG
 const createTag = (payload) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/tags.json`, {
     method: 'POST',
@@ -53,7 +50,6 @@ const createTag = (payload) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// UPDATE TAG
 const updateTag = (payload) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/tags/${payload.firebaseKey}.json`, {
     method: 'PATCH',
@@ -72,7 +68,6 @@ const updateTag = (payload) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// DELETE TAG
 const deleteTag = (firebaseKey) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/tags/${firebaseKey}.json`, {
     method: 'DELETE',

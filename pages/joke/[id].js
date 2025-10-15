@@ -16,7 +16,7 @@ const initialState = {
 
 export default function ViewJoke() {
   const router = useRouter();
-  const { id } = router.query; // This is the firebaseKey
+  const { id } = router.query;
   const [jokeDetails, setJokeDetails] = useState({});
   const [comments, setComments] = useState([]);
   const [jokeAuthor, setJokeAuthor] = useState(null);
@@ -26,7 +26,6 @@ export default function ViewJoke() {
     if (id) {
       getSingleJoke(id).then((joke) => {
         setJokeDetails(joke);
-        // Fetch author information
         if (joke?.uid) {
           getUserByUid(joke.uid).then(setJokeAuthor);
         }

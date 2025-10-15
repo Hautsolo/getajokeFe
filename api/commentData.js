@@ -2,7 +2,6 @@ import { clientCredentials } from '../utils/client';
 
 const endpoint = clientCredentials.databaseURL;
 
-// CREATE COMMENT
 const createComment = (jokeFirebaseKey, payload) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/jokes/${jokeFirebaseKey}/comments.json`, {
     method: 'POST',
@@ -21,7 +20,6 @@ const createComment = (jokeFirebaseKey, payload) => new Promise((resolve, reject
     .catch(reject);
 });
 
-// GET COMMENTS FOR A JOKE
 const getComments = (jokeFirebaseKey) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/jokes/${jokeFirebaseKey}/comments.json`, {
     method: 'GET',
@@ -32,7 +30,6 @@ const getComments = (jokeFirebaseKey) => new Promise((resolve, reject) => {
     .then((response) => response.json())
     .then((data) => {
       if (data) {
-        // Convert Firebase object to array while preserving firebaseKey
         const commentsWithKeys = Object.keys(data).map(key => ({
           ...data[key],
           firebaseKey: key
@@ -45,7 +42,6 @@ const getComments = (jokeFirebaseKey) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// UPDATE COMMENT
 const updateComment = (jokeFirebaseKey, commentFirebaseKey, payload) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/jokes/${jokeFirebaseKey}/comments/${commentFirebaseKey}.json`, {
     method: 'PATCH',
@@ -64,7 +60,6 @@ const updateComment = (jokeFirebaseKey, commentFirebaseKey, payload) => new Prom
     .catch(reject);
 });
 
-// DELETE COMMENT
 const deleteComment = (jokeFirebaseKey, commentFirebaseKey) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/jokes/${jokeFirebaseKey}/comments/${commentFirebaseKey}.json`, {
     method: 'DELETE',
@@ -82,7 +77,6 @@ const deleteComment = (jokeFirebaseKey, commentFirebaseKey) => new Promise((reso
     .catch(reject);
 });
 
-// GET SINGLE COMMENT
 const getSingleComment = (jokeFirebaseKey, commentFirebaseKey) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/jokes/${jokeFirebaseKey}/comments/${commentFirebaseKey}.json`, {
     method: 'GET',

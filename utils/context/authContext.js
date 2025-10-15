@@ -1,5 +1,3 @@
-// Context API Docs: https://beta.reactjs.org/learn/passing-data-deeply-with-context
-
 import React, {
   createContext,
   useContext,
@@ -62,9 +60,8 @@ function AuthProvider(props) {
           .catch(() => setFinalUser(fbUser, null))
           .finally(() => setInitializing(false));
       } else {
-        // Signed out
         setOAuthUser(false);
-        setFinalUser(null, null); // sets user to false
+        setFinalUser(null, null);
         setInitializing(false);
       }
     });

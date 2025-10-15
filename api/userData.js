@@ -2,7 +2,6 @@ import { clientCredentials } from '../utils/client';
 
 const endpoint = clientCredentials.databaseURL;
 
-// GET SINGLE USER
 const getSingleUser = (firebaseKey) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/users/${firebaseKey}.json`, {
     method: 'GET',
@@ -21,7 +20,6 @@ const getSingleUser = (firebaseKey) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// GET USER BY UID
 const getUserByUid = (uid) => new Promise((resolve, reject) => {
   if (!uid) { resolve(null); return; }
   const normalized = String(uid);
@@ -33,7 +31,6 @@ const getUserByUid = (uid) => new Promise((resolve, reject) => {
   })
     .then(async (response) => {
       if (!response.ok) {
-        // Fallback: fetch all users and filter client-side (avoids 400 issues)
         const allResp = await fetch(`${endpoint}/users.json`);
         const allData = await allResp.json();
         if (allData && typeof allData === 'object') {
@@ -52,7 +49,7 @@ const getUserByUid = (uid) => new Promise((resolve, reject) => {
       return response.json();
     })
     .then((data) => {
-      if (!data) return; // already resolved in fallback
+      if (!data) return;
       if (data && typeof data === 'object') {
         const userEntries = Object.entries(data);
         if (userEntries.length > 0) {
@@ -66,7 +63,6 @@ const getUserByUid = (uid) => new Promise((resolve, reject) => {
       }
     })
     .catch(async () => {
-      // Network or parse error; fallback to full fetch
       try {
         const allResp = await fetch(`${endpoint}/users.json`);
         const allData = await allResp.json();
@@ -87,7 +83,6 @@ const getUserByUid = (uid) => new Promise((resolve, reject) => {
     });
 });
 
-// CREATE USER
 const createUser = (payload) => new Promise((resolve, reject) => {
   fetch(`${endpoint}/users.json`, {
     method: 'POST',
@@ -106,7 +101,6 @@ const createUser = (payload) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// UPDATE USER
 const updateUserProfile = (payload) => new Promise((resolve, reject) => {
   const { firebaseKey, ...updateData } = payload;
   if (!firebaseKey) { reject(new Error('FirebaseKey is required for user update')); return; }
@@ -127,7 +121,6 @@ const updateUserProfile = (payload) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-// GET ALL USERS
 const getUsers = () => new Promise((resolve, reject) => {
   fetch(`${endpoint}/users.json`, {
     method: 'GET',

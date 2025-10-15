@@ -16,7 +16,6 @@ export default function EditProfile() {
 
   useEffect(() => {
     if (id) {
-      // Check if user is trying to edit their own profile
       if (user?.uid !== id) {
         setError('You can only edit your own profile');
         setIsLoading(false);
@@ -28,7 +27,6 @@ export default function EditProfile() {
           if (data) {
             setUserDetails(data);
           } else {
-            // Use current user data as fallback
             setUserDetails({
               uid: user.uid,
               displayName: user.displayName,
@@ -39,7 +37,6 @@ export default function EditProfile() {
         })
         .catch((err) => {
           console.error('Error fetching user details:', err);
-          // Use current user data as fallback
           setUserDetails({
             uid: user.uid,
             displayName: user.displayName,
@@ -54,7 +51,6 @@ export default function EditProfile() {
   }, [id, user]);
 
   const handleUpdateUser = () => {
-    // Refresh the user data after update
     if (id) {
       getUserByUid(id).then((data) => {
         setUserDetails(data);

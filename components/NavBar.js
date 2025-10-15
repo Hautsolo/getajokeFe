@@ -30,10 +30,9 @@ export default function NavBar() {
             <Nav style={{
               width: '100%',
               display: 'flex',
-              justifyContent: 'space-between',
-            }}
+            justifyContent: 'space-between',
+          }}
             >
-              {/* CLOSE NAVBAR ON LINK SELECTION: https://stackoverflow.com/questions/72813635/collapse-on-select-react-bootstrap-navbar-with-nextjs-not-working */}
               <div style={{
                 display: 'flex',
               }}
